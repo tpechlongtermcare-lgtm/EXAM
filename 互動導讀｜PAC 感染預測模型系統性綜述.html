@@ -1,0 +1,2196 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>互動導讀｜PAC 感染預測模型系統性綜述</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF1F4;
+  --card:#FFFFFF;
+  --ink:#14202B;
+  --ink-soft:#4A5A68;
+  --muted:#7A8894;
+  --rule:#D4DBE1;
+  --blue:#1C4E80;
+  --blue-soft:#E3ECF5;
+  --trace:#0E8C86;
+  --trace-soft:#DDF0EE;
+  --flag:#B33F36;
+  --flag-soft:#F7E2E0;
+  --amber:#A6741B;
+  --shadow:0 1px 0 var(--rule);
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --paper:#0F171E;
+    --card:#17222C;
+    --ink:#E6ECF1;
+    --ink-soft:#AFBEC9;
+    --muted:#8496A3;
+    --rule:#2A3A47;
+    --blue:#7FB2E5;
+    --blue-soft:#1B2E42;
+    --trace:#46C3B8;
+    --trace-soft:#123330;
+    --flag:#E8867C;
+    --flag-soft:#3A211F;
+    --amber:#D9A94A;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F171E;
+  --card:#17222C;
+  --ink:#E6ECF1;
+  --ink-soft:#AFBEC9;
+  --muted:#8496A3;
+  --rule:#2A3A47;
+  --blue:#7FB2E5;
+  --blue-soft:#1B2E42;
+  --trace:#46C3B8;
+  --trace-soft:#123330;
+  --flag:#E8867C;
+  --flag-soft:#3A211F;
+  --amber:#D9A94A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{animation:none !important; transition:none !important}}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Noto Sans TC","Helvetica Neue",Arial,"PingFang TC","Microsoft JhengHei",sans-serif;
+  font-size:16px; line-height:1.75; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.serif{font-family:"Noto Serif TC",Georgia,"Songti TC",serif;}
+h1{font-size:clamp(1.7rem,4.2vw,2.6rem); line-height:1.3; margin:0 0 .4em; font-weight:700; letter-spacing:.01em}
+h2{font-size:clamp(1.25rem,2.6vw,1.6rem); margin:0 0 .6em; font-weight:700}
+h3{font-size:1.05rem; margin:1.6em 0 .4em; font-weight:600}
+p{margin:0 0 1em; max-width:68ch}
+a{color:var(--blue)}
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px}
+.layout{display:grid; grid-template-columns:200px minmax(0,1fr); gap:44px; align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr; gap:0}}
+
+/* ---- stage rail ---- */
+.rail{position:sticky; top:24px; padding:8px 0 40px}
+.rail ol{list-style:none; margin:0; padding:0}
+.rail li{position:relative; padding:0 0 2px 20px; border-left:2px solid var(--rule)}
+.rail li:last-child{border-left-color:transparent}
+.rail a{
+  display:block; padding:7px 0; color:var(--ink-soft); text-decoration:none;
+  font-size:.9rem; line-height:1.4; border-radius:4px;
+}
+.rail a:hover{color:var(--ink)}
+.rail li::before{
+  content:""; position:absolute; left:-6px; top:16px; width:10px; height:10px;
+  border-radius:50%; background:var(--paper); border:2px solid var(--rule);
+}
+.rail li.on::before{background:var(--trace); border-color:var(--trace)}
+.rail li.on a{color:var(--ink); font-weight:700}
+.rail li.done::before{background:var(--rule); border-color:var(--rule)}
+.railhead{font-size:.78rem; color:var(--muted); margin:0 0 10px 20px; letter-spacing:.04em}
+@media (max-width:900px){
+  .rail{position:sticky; top:0; z-index:20; background:var(--paper); padding:8px 0; border-bottom:1px solid var(--rule); margin:0 -20px; padding-left:20px; padding-right:20px}
+  .railhead{display:none}
+  .rail ol{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none}
+  .rail ol::-webkit-scrollbar{display:none}
+  .rail li{border-left:none; padding:0; flex:0 0 auto}
+  .rail li::before{display:none}
+  .rail a{padding:6px 12px; border:1px solid var(--rule); border-radius:999px; white-space:nowrap; font-size:.82rem}
+  .rail li.on a{border-color:var(--trace); color:var(--trace)}
+}
+
+/* ---- hero ---- */
+.hero{padding:56px 0 8px}
+.kicker{color:var(--trace); font-size:.9rem; margin:0 0 14px; font-weight:500}
+.lede{font-size:1.08rem; color:var(--ink-soft); max-width:60ch}
+.hero .t-en{font-size:.97rem; line-height:1.6; color:var(--ink-soft); margin:0 0 14px; max-width:62ch}
+.byline{font-size:1rem; color:var(--ink); margin:0; padding-top:16px; border-top:2px solid var(--trace); display:inline-block}
+.cite{
+  margin:26px 0 0; padding:14px 18px; background:var(--card);
+  border-left:3px solid var(--blue); border-radius:0 6px 6px 0;
+  font-size:.9rem; color:var(--ink-soft); box-shadow:var(--shadow); max-width:60ch;
+}
+.cite b{color:var(--ink); font-weight:500}
+
+section{padding:52px 0; border-top:1px solid var(--rule)}
+section:first-of-type{border-top:none}
+.sectnote{color:var(--muted); font-size:.9rem; margin:-.3em 0 1.6em}
+
+/* ---- funnel ---- */
+.funnel{display:grid; grid-template-columns:86px minmax(0,1fr); gap:14px}
+@media (max-width:640px){.funnel{grid-template-columns:1fr} .stagetag{display:none}}
+.stagecol{display:grid; gap:10px}
+.stagetag{
+  background:var(--blue-soft); color:var(--blue); border-radius:5px;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  font-size:.8rem; padding:6px; line-height:1.35; writing-mode:horizontal-tb;
+}
+.steps{display:grid; gap:10px}
+.step{
+  width:100%; text-align:left; cursor:pointer; background:var(--card); color:inherit;
+  border:1px solid var(--rule); border-radius:6px; padding:12px 16px;
+  font:inherit; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+  transition:border-color .15s, background .15s;
+}
+.step:hover{border-color:var(--trace)}
+.step[aria-pressed="true"]{border-color:var(--trace); background:var(--trace-soft)}
+.step .n{font-size:1.35rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--blue)}
+.step .lbl{flex:1; min-width:140px}
+.step .sub{color:var(--muted); font-size:.85rem; width:100%}
+.branch{
+  margin-left:24px; border-left:2px dashed var(--rule); padding:4px 0 4px 18px;
+  color:var(--ink-soft); font-size:.9rem;
+}
+.branch b{color:var(--flag); font-variant-numeric:tabular-nums}
+.stepdetail{
+  margin-top:16px; background:var(--card); border:1px solid var(--rule);
+  border-radius:6px; padding:18px 20px; min-height:90px;
+}
+.stepdetail h4{margin:0 0 .4em; font-size:1rem; font-family:"Noto Serif TC",serif}
+.stepdetail p{margin:0; color:var(--ink-soft); font-size:.95rem}
+
+/* ---- map ---- */
+.maplist{display:grid; gap:0; margin:0; padding:0; list-style:none; border-top:1px solid var(--rule)}
+.maplist li{display:grid; grid-template-columns:150px minmax(0,1fr); gap:18px; padding:14px 2px; border-bottom:1px solid var(--rule)}
+@media (max-width:640px){.maplist li{grid-template-columns:1fr; gap:2px}}
+.maplist .sec{font-weight:700; color:var(--blue); font-size:.95rem}
+.maplist .say{color:var(--ink-soft); font-size:.95rem}
+
+/* ---- studies ---- */
+.filters{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 18px}
+.chip{
+  border:1px solid var(--rule); background:var(--card); color:var(--ink-soft);
+  padding:5px 13px; border-radius:999px; font:inherit; font-size:.85rem; cursor:pointer;
+}
+.chip[aria-pressed="true"]{background:var(--blue); border-color:var(--blue); color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"],
+:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0F171E}
+.studygrid{display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:22px; align-items:start}
+@media (max-width:860px){.studygrid{grid-template-columns:1fr}}
+.rows{display:grid; gap:6px; max-height:520px; overflow:auto; padding-right:4px}
+.row{
+  display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;
+  background:var(--card); border:1px solid var(--rule); border-radius:6px;
+  padding:10px 14px; cursor:pointer; font:inherit; color:inherit; text-align:left; width:100%;
+}
+.row:hover{border-color:var(--trace)}
+.row[aria-pressed="true"]{border-color:var(--trace); background:var(--trace-soft)}
+.row .who{font-weight:700}
+.row .where{color:var(--muted); font-size:.83rem; display:block; font-weight:400}
+.bar{width:104px}
+.bar .track{height:7px; background:var(--rule); border-radius:4px; overflow:hidden}
+.bar .fill{height:100%; background:var(--trace); border-radius:4px}
+.bar .val{font-size:.8rem; color:var(--ink-soft); font-variant-numeric:tabular-nums; text-align:right; display:block}
+.panel{background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:20px 22px; position:sticky; top:24px}
+@media (max-width:860px){.panel{position:static}}
+.panel h3{margin:0 0 2px; font-size:1.15rem}
+.panel .sub{color:var(--muted); font-size:.87rem; margin:0 0 14px}
+.kv{display:grid; grid-template-columns:82px minmax(0,1fr); gap:6px 14px; font-size:.93rem; margin:0 0 14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.explain{background:var(--blue-soft); border-radius:6px; padding:12px 14px; font-size:.9rem; color:var(--ink); margin:0}
+.explain b{color:var(--blue)}
+.tagrow{display:flex; gap:6px; flex-wrap:wrap; margin:0 0 14px}
+.tag{font-size:.76rem; padding:2px 9px; border-radius:999px; background:var(--blue-soft); color:var(--blue)}
+.tag.multi{background:var(--trace-soft); color:var(--trace)}
+
+/* ---- concept blocks ---- */
+.concept{background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:22px 24px; margin:0 0 20px}
+.algos{display:grid; gap:10px; margin:14px 0 0}
+.algo{display:grid; grid-template-columns:132px 86px minmax(0,1fr); gap:14px; align-items:center; font-size:.93rem; padding:8px 0; border-top:1px solid var(--rule)}
+@media (max-width:700px){.algo{grid-template-columns:1fr; gap:2px; padding:12px 0}}
+.algo .name{font-weight:700}
+.algo .pct{position:relative; height:8px; background:var(--rule); border-radius:4px}
+.algo .pct i{position:absolute; inset:0 auto 0 0; background:var(--blue); border-radius:4px; display:block}
+.algo .pctnum{font-size:.8rem; color:var(--muted); font-variant-numeric:tabular-nums}
+.algo .what{color:var(--ink-soft)}
+
+.aucstage{display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:26px; align-items:center}
+@media (max-width:820px){.aucstage{grid-template-columns:1fr}}
+.readout{font-size:2.6rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--trace); line-height:1; font-family:"Noto Serif TC",serif}
+.readout small{display:block; font-size:.85rem; color:var(--muted); font-weight:400; font-family:"Noto Sans TC",sans-serif; margin-top:6px; line-height:1.5}
+input[type=range]{width:100%; accent-color:var(--trace); margin:18px 0 6px}
+.presets{display:flex; flex-wrap:wrap; gap:6px}
+.sens{display:flex; gap:18px; font-size:.88rem; color:var(--ink-soft); margin-top:12px; flex-wrap:wrap}
+.sens b{color:var(--ink); font-variant-numeric:tabular-nums}
+svg{max-width:100%; height:auto; display:block}
+.legend{display:flex; gap:16px; font-size:.83rem; color:var(--muted); margin-top:6px; flex-wrap:wrap}
+.swatch{display:inline-block; width:11px; height:11px; border-radius:2px; vertical-align:-1px; margin-right:5px}
+
+.twoup{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:760px){.twoup{grid-template-columns:1fr}}
+.toggle{display:flex; gap:8px; margin:0 0 14px}
+
+.flow{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:16px 0 0}
+.node{background:var(--blue-soft); color:var(--blue); border-radius:6px; padding:9px 14px; font-size:.88rem}
+.node.alt{background:var(--trace-soft); color:var(--trace)}
+.arrow{color:var(--muted)}
+
+/* ---- probast ---- */
+.dots{display:flex; gap:5px; flex-wrap:wrap; margin:10px 0 4px}
+.dot{width:24px; height:24px; border-radius:5px; background:var(--flag-soft); border:1px solid var(--flag); display:grid; place-items:center; font-size:.7rem; color:var(--flag)}
+.dot.ok{background:var(--trace-soft); border-color:var(--trace); color:var(--trace)}
+.metric{margin:18px 0 0}
+.metric .lab{display:flex; justify-content:space-between; font-size:.9rem; margin-bottom:5px}
+.metric .lab b{font-variant-numeric:tabular-nums}
+.metric .track{height:10px; background:var(--rule); border-radius:5px; overflow:hidden}
+.metric .fill{height:100%; background:var(--flag)}
+
+/* ---- quiz ---- */
+details{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:12px 16px; margin:0 0 8px}
+details[open]{border-color:var(--trace)}
+summary{cursor:pointer; font-weight:500; list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"＋"; color:var(--trace); margin-right:10px; font-weight:700}
+details[open] summary::before{content:"−"}
+details p{margin:12px 0 0; color:var(--ink-soft); font-size:.93rem}
+
+.warn{border-left:3px solid var(--amber); background:var(--card); padding:12px 16px; border-radius:0 6px 6px 0; font-size:.9rem; color:var(--ink-soft); margin:18px 0 0}
+.warn b{color:var(--amber)}
+footer{padding:40px 0 70px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--rule)}
+.themebtn{position:fixed; right:16px; bottom:16px; z-index:30; border:1px solid var(--rule); background:var(--card); color:var(--ink-soft); border-radius:999px; padding:8px 14px; font:inherit; font-size:.82rem; cursor:pointer; box-shadow:0 2px 12px rgba(0,0,0,.12)}
+:focus-visible{outline:2px solid var(--trace); outline-offset:2px}
+
+
+/* ---- added visuals ---- */
+.vizwrap{background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:18px 20px; margin:0 0 20px}
+.vizhead{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; margin:0 0 12px}
+.vizhead h3{margin:0; font-size:1.02rem; font-family:"Noto Serif TC",serif}
+.vizhead .hint{font-size:.84rem; color:var(--muted)}
+.pyrlayout{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.95fr); gap:24px; align-items:center}
+@media (max-width:820px){.pyrlayout{grid-template-columns:1fr}}
+.pyrinfo h4{margin:0 0 6px; font-size:1.05rem; font-family:"Noto Serif TC",serif}
+.pyrinfo p{margin:0 0 10px; font-size:.93rem; color:var(--ink-soft)}
+.pgrid{display:grid; grid-template-columns:118px repeat(4,minmax(0,1fr)); gap:4px; align-items:center; font-size:.8rem}
+@media (max-width:620px){.pgrid{grid-template-columns:78px repeat(4,minmax(0,1fr)); font-size:.7rem}}
+.pgrid .rowname{color:var(--ink-soft); padding-right:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pgrid .colname{color:var(--muted); text-align:center; padding-bottom:4px; line-height:1.3}
+.pcell{height:30px; border:1px solid var(--rule); border-radius:4px; background:transparent; cursor:pointer; font:inherit; font-size:.72rem; color:var(--muted); padding:0}
+.pcell[data-v="high"]{background:var(--flag-soft); border-color:var(--flag); color:var(--flag)}
+.pcell[data-v="unclear"]{background:var(--rule); border-color:var(--muted); color:var(--ink-soft)}
+.pcell[data-v="low"]{background:var(--trace-soft); border-color:var(--trace); color:var(--trace)}
+
+
+
+/* ---- PRISMA flow (Figure 2A style) ---- */
+.flowgrid{display:grid; grid-template-columns:74px minmax(0,1fr); gap:10px; align-items:stretch}
+@media (max-width:640px){.flowgrid{grid-template-columns:52px minmax(0,1fr); gap:7px}}
+.stagecol2{display:grid; gap:8px}
+.stg{background:var(--blue-soft); color:var(--blue); border-radius:5px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:.78rem; line-height:1.35; padding:6px 2px}
+@media (max-width:640px){.stg{font-size:.68rem}}
+.flowcol{display:grid; gap:8px; align-content:start}
+.dbrow{display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px}
+@media (max-width:760px){.dbrow{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.db{border:1px solid var(--rule); border-radius:5px; padding:7px 6px; text-align:center; background:var(--card)}
+.db .nm{font-size:.76rem; color:var(--ink-soft); line-height:1.3}
+.db .ct{font-size:.95rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--blue); margin-top:2px}
+.db .pb{height:3px; border-radius:2px; background:var(--blue); opacity:.5; margin-top:5px}
+.fbox{border:1px solid var(--rule); border-radius:5px; background:var(--card); padding:10px 14px; text-align:center; cursor:pointer; font:inherit; color:inherit; width:100%}
+.fbox:hover{border-color:var(--trace)}
+.fbox[aria-pressed="true"]{border-color:var(--trace); background:var(--trace-soft)}
+.fbox .lb{font-size:.88rem; color:var(--ink-soft)}
+.fbox .nn{font-size:1.15rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink); margin-left:8px}
+.fbox[aria-pressed="true"] .nn{color:var(--trace)}
+.splitrow{display:grid; grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr); gap:0; align-items:center}
+@media (max-width:640px){.splitrow{grid-template-columns:1fr; gap:6px}}
+.arrowh{height:1.5px; background:var(--rule); position:relative}
+.arrowh::after{content:""; position:absolute; right:0; top:-3px; border-left:6px solid var(--rule); border-top:4px solid transparent; border-bottom:4px solid transparent}
+@media (max-width:640px){.arrowh{display:none}}
+.exbox{border:1px solid var(--flag); background:var(--flag-soft); border-radius:5px; padding:10px 14px; font-size:.84rem; color:var(--ink)}
+.exbox .hd2{font-weight:700; color:var(--flag); margin-bottom:5px; font-size:.88rem}
+.exbox ul{margin:0; padding-left:17px}
+.exbox li{margin:1px 0}
+.vdown{justify-self:center; color:var(--muted); font-size:1rem; line-height:1}
+.handrow{display:grid; grid-template-columns:150px 14px minmax(0,1fr); align-items:center}
+@media (max-width:640px){.handrow{grid-template-columns:1fr}}
+.handbox{border:1px dashed var(--rule); border-radius:5px; padding:8px 10px; text-align:center; font-size:.82rem; color:var(--muted)}
+.rqgrid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:0}
+@media (max-width:860px){.rqgrid{grid-template-columns:1fr}}
+.rq{border:1px solid var(--rule); border-radius:6px; padding:13px 15px; background:var(--card)}
+.rq h4{margin:0 0 7px; font-size:.92rem; font-family:"Noto Serif TC",serif; color:var(--blue)}
+.rq p{margin:0 0 8px; font-size:.87rem; color:var(--ink); line-height:1.6}
+.rq ul{margin:0; padding-left:16px; font-size:.82rem; color:var(--ink-soft)}
+.rq li{margin:2px 0}
+/* ---- included-studies reference list ---- */
+.reflist{counter-reset:none; margin:0; padding:0; list-style:none; border-top:1px solid var(--rule)}
+.reflist li{display:grid; grid-template-columns:40px minmax(0,1fr); gap:12px; padding:12px 2px; border-bottom:1px solid var(--rule); font-size:.88rem}
+@media (max-width:620px){.reflist li{grid-template-columns:30px minmax(0,1fr); gap:8px; font-size:.82rem}}
+.reflist .rn{color:var(--muted); font-variant-numeric:tabular-nums; text-align:right}
+.reflist .ti{color:var(--ink); line-height:1.55}
+.reflist .jr{color:var(--ink-soft); display:block; margin-top:3px}
+.reflist .doi{color:var(--muted); font-size:.8rem; display:block; margin-top:2px; word-break:break-all}
+.panel .fulltitle{font-size:.88rem; line-height:1.55; color:var(--ink-soft); border-left:2px solid var(--rule); padding-left:11px; margin:0 0 13px}
+
+.qrrow{display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; margin:26px 0 0}
+.qrcard{display:flex; gap:14px; align-items:center}
+.qrcard .qbox2{background:#fff; border:1px solid var(--rule); border-radius:8px; padding:7px; line-height:0; flex:none}
+.qrcard svg{width:104px; height:104px; display:block}
+.qrcard .meta{font-size:.86rem; line-height:1.6}
+.qrcard .meta b{display:block; color:var(--ink); font-size:.93rem; margin-bottom:2px}
+.qrcard .meta span{color:var(--muted); display:block}
+.qrcard .meta .u{font-size:.78rem; word-break:break-all; color:var(--ink-soft); margin-top:3px}
+@media (max-width:560px){.qrrow{gap:18px} .qrcard svg{width:92px; height:92px}}
+.quad{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:0 0 4px}
+@media (max-width:760px){.quad{grid-template-columns:1fr}}
+.qbox{border:1px solid var(--rule); border-radius:8px; padding:16px 18px; background:var(--card)}
+.qbox h4{margin:0 0 4px; font-size:1rem; font-family:"Noto Serif TC",serif}
+.qbox .en{font-size:.76rem; color:var(--muted); margin:0 0 11px}
+.qbox ul{margin:0; padding-left:0; list-style:none}
+.qbox li{position:relative; padding-left:17px; margin:0 0 9px; font-size:.9rem; line-height:1.62; color:var(--ink-soft)}
+.qbox li:last-child{margin-bottom:0}
+.qbox li::before{content:""; position:absolute; left:0; top:9px; width:6px; height:6px; border-radius:50%; background:var(--trace)}
+.qbox li b{color:var(--ink)}
+.rqtag{font-size:.82rem; color:var(--muted); margin:0 0 6px; display:flex; align-items:center; gap:8px}
+.rqtag span{background:var(--blue-soft); color:var(--blue); border-radius:3px; padding:2px 7px; font-weight:700; font-size:.76rem}
+
+/* ---- head-to-head comparison ---- */
+.cmp{display:grid; grid-template-columns:132px minmax(0,1fr) minmax(0,1fr); border-top:1px solid var(--rule); font-size:.92rem}
+@media (max-width:700px){.cmp{grid-template-columns:96px minmax(0,1fr) minmax(0,1fr); font-size:.84rem}}
+.cmp > div{padding:10px 12px; border-bottom:1px solid var(--rule)}
+.cmp .k{color:var(--muted); padding-left:0}
+.cmp .hd{font-family:"Noto Serif TC",serif; font-weight:600; font-size:.98rem; border-bottom:2px solid var(--rule)}
+.cmp .hd small{display:block; font-family:"Noto Sans TC",sans-serif; font-weight:400; font-size:.78rem; color:var(--muted); margin-top:3px}
+.cmp .a{background:var(--trace-soft)}
+.cmp .b{background:var(--flag-soft)}
+.cmp .big{font-size:1.25rem; font-weight:700; font-variant-numeric:tabular-nums; font-family:"Noto Serif TC",serif}
+.cmp .a .big{color:var(--trace)}
+.cmp .b .big{color:var(--flag)}
+.verdict{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:18px 0 0}
+@media (max-width:700px){.verdict{grid-template-columns:1fr}}
+.verdict > div{border-radius:6px; padding:12px 14px; font-size:.9rem}
+.verdict .no{background:var(--flag-soft); color:var(--ink)}
+.verdict .yes{background:var(--trace-soft); color:var(--ink)}
+.verdict b{display:block; margin-bottom:5px}
+.verdict .no b{color:var(--flag)}
+.verdict .yes b{color:var(--trace)}
+
+/* ---- algorithm lab ---- */
+.algopicker{display:flex; flex-wrap:wrap; gap:7px; margin:0 0 18px}
+.algopicker .chip{font-size:.86rem}
+.algolab{display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:22px; align-items:start}
+@media (max-width:900px){.algolab{grid-template-columns:1fr}}
+.stage{background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:20px 22px; min-height:330px}
+.stagetitle{font-family:"Noto Serif TC",serif; font-weight:600; font-size:.95rem; color:var(--muted); margin:0 0 14px}
+.ctl{display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin:16px 0 0; padding-top:14px; border-top:1px solid var(--rule)}
+.ctl label{font-size:.85rem; color:var(--ink-soft); display:flex; align-items:center; gap:8px}
+.ctl input[type=range]{width:120px; margin:0}
+.btn{border:1px solid var(--trace); background:var(--trace-soft); color:var(--trace); border-radius:6px; padding:6px 14px; font:inherit; font-size:.86rem; cursor:pointer}
+.btn:hover{background:var(--trace); color:var(--card)}
+.btn.ghost{border-color:var(--rule); background:transparent; color:var(--ink-soft)}
+.who-pick{display:flex; flex-wrap:wrap; gap:6px}
+.who-pick button{border:1px solid var(--rule); background:var(--card); color:var(--ink-soft); border-radius:6px; padding:5px 11px; font:inherit; font-size:.82rem; cursor:pointer}
+.who-pick button[aria-pressed="true"]{border-color:var(--blue); background:var(--blue-soft); color:var(--blue)}
+.side h3{margin:0 0 4px; font-size:1.2rem}
+.usage{font-size:.85rem; color:var(--trace); margin:0 0 14px; font-weight:500}
+.side p{font-size:.95rem}
+.readline{display:flex; align-items:baseline; gap:10px; margin:14px 0 0; flex-wrap:wrap}
+.readline .big{font-size:2rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--trace); font-family:"Noto Serif TC",serif; line-height:1}
+.readline .cap{font-size:.88rem; color:var(--ink-soft)}
+.votes{display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 0}
+.vote{border:1px solid var(--rule); border-radius:6px; padding:8px 10px; text-align:center; font-size:.78rem; color:var(--muted); min-width:74px}
+.vote b{display:block; font-size:.95rem; margin-top:3px}
+.vote.hi{border-color:var(--flag); color:var(--flag); background:var(--flag-soft)}
+.vote.lo{border-color:var(--blue); color:var(--blue); background:var(--blue-soft)}
+.note-inline{font-size:.86rem; color:var(--muted); margin:12px 0 0}
+.spark{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+@media (max-width:560px){.spark{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sparkcell{border:1px solid var(--rule); border-radius:6px; padding:8px}
+.sparkcell span{font-size:.76rem; color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="layout">
+
+  <nav class="rail" aria-label="導讀段落">
+    <p class="railhead">導讀階段</p>
+    <ol id="rail">
+      <li data-t="map"><a href="#map">摘要</a></li>
+      <li data-t="prisma"><a href="#prisma">搜尋與篩選</a></li>
+      <li data-t="studies"><a href="#studies">13 篇研究</a></li>
+      <li data-t="modal"><a href="#modal">資料從哪裡來</a></li>
+      <li data-t="predictors"><a href="#predictors">預測因子分層</a></li>
+      <li data-t="algo"><a href="#algo">演算法在做什麼</a></li>
+      <li data-t="auc"><a href="#auc">AUC 是什麼</a></li>
+      <li data-t="headtohead"><a href="#headtohead">最高分與最低分</a></li>
+      <li data-t="calib"><a href="#calib">校準與驗證</a></li>
+      <li data-t="conclusion"><a href="#conclusion">結論</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <p class="t-en">Machine learning-based infection diagnostic and prognostic models in post-acute care settings: a systematic review</p>
+      <h1>急性後期照護場域中以機器學習建立<br>感染診斷與預後模型：系統性綜述</h1>
+      <p class="byline">報告者　鄭瑞賢</p>
+      <p class="cite"><b>Xu, Z., Scharp, D., Hobensack, M., Ye, J., Zou, J., Ding, S., Shang, J., &amp; Topaz, M. (2025).</b> Machine learning-based infection diagnostic and prognostic models in post-acute care settings: A systematic review. <i>Journal of the American Medical Informatics Association, 32</i>(1), 241&ndash;252. https://doi.org/10.1093/jamia/ocae278</p>
+      <div class="qrrow">
+        <div class="qrcard">
+          <div class="qbox2"><svg viewBox="0 0 37 37" role="img" aria-label="免費全文 QR Code" shape-rendering="crispEdges"><rect width="37" height="37" fill="#fff"/><path fill="#000" d="M2 2h7v1h-7zM13 2h1v1h-1zM18 2h1v1h-1zM20 2h4v1h-4zM25 2h1v1h-1zM28 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM11 3h4v1h-4zM17 3h2v1h-2zM20 3h1v1h-1zM23 3h2v1h-2zM26 3h1v1h-1zM28 3h1v1h-1zM34 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM10 4h5v1h-5zM16 4h1v1h-1zM18 4h1v1h-1zM21 4h3v1h-3zM25 4h1v1h-1zM28 4h1v1h-1zM30 4h3v1h-3zM34 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM10 5h1v1h-1zM13 5h1v1h-1zM20 5h2v1h-2zM25 5h1v1h-1zM28 5h1v1h-1zM30 5h3v1h-3zM34 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM10 6h1v1h-1zM14 6h1v1h-1zM16 6h4v1h-4zM22 6h5v1h-5zM28 6h1v1h-1zM30 6h3v1h-3zM34 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h5v1h-5zM19 7h1v1h-1zM21 7h1v1h-1zM26 7h1v1h-1zM28 7h1v1h-1zM34 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h1v1h-1zM26 8h1v1h-1zM28 8h7v1h-7zM10 9h1v1h-1zM13 9h2v1h-2zM16 9h1v1h-1zM18 9h1v1h-1zM20 9h6v1h-6zM2 10h1v1h-1zM4 10h5v1h-5zM11 10h3v1h-3zM15 10h2v1h-2zM19 10h1v1h-1zM21 10h1v1h-1zM24 10h1v1h-1zM26 10h1v1h-1zM28 10h5v1h-5zM4 11h1v1h-1zM6 11h1v1h-1zM10 11h1v1h-1zM12 11h5v1h-5zM19 11h3v1h-3zM25 11h1v1h-1zM28 11h2v1h-2zM31 11h2v1h-2zM34 11h1v1h-1zM2 12h3v1h-3zM8 12h1v1h-1zM10 12h2v1h-2zM15 12h3v1h-3zM19 12h1v1h-1zM22 12h2v1h-2zM26 12h1v1h-1zM30 12h1v1h-1zM32 12h2v1h-2zM2 13h2v1h-2zM6 13h1v1h-1zM9 13h2v1h-2zM12 13h4v1h-4zM18 13h3v1h-3zM22 13h2v1h-2zM25 13h1v1h-1zM30 13h4v1h-4zM2 14h2v1h-2zM6 14h3v1h-3zM10 14h1v1h-1zM16 14h3v1h-3zM21 14h1v1h-1zM25 14h1v1h-1zM27 14h1v1h-1zM31 14h1v1h-1zM34 14h1v1h-1zM2 15h6v1h-6zM10 15h1v1h-1zM12 15h2v1h-2zM15 15h1v1h-1zM17 15h1v1h-1zM19 15h2v1h-2zM23 15h4v1h-4zM32 15h3v1h-3zM4 16h1v1h-1zM6 16h4v1h-4zM12 16h2v1h-2zM17 16h2v1h-2zM20 16h1v1h-1zM27 16h2v1h-2zM30 16h2v1h-2zM33 16h1v1h-1zM4 17h2v1h-2zM9 17h3v1h-3zM13 17h1v1h-1zM17 17h1v1h-1zM23 17h1v1h-1zM26 17h3v1h-3zM30 17h3v1h-3zM3 18h2v1h-2zM6 18h1v1h-1zM8 18h1v1h-1zM10 18h2v1h-2zM13 18h3v1h-3zM17 18h3v1h-3zM24 18h1v1h-1zM26 18h2v1h-2zM29 18h2v1h-2zM34 18h1v1h-1zM3 19h1v1h-1zM5 19h1v1h-1zM7 19h1v1h-1zM12 19h1v1h-1zM18 19h1v1h-1zM20 19h4v1h-4zM25 19h5v1h-5zM31 19h2v1h-2zM34 19h1v1h-1zM2 20h1v1h-1zM5 20h1v1h-1zM8 20h4v1h-4zM14 20h5v1h-5zM20 20h1v1h-1zM24 20h1v1h-1zM27 20h4v1h-4zM32 20h2v1h-2zM2 21h6v1h-6zM11 21h1v1h-1zM13 21h1v1h-1zM15 21h1v1h-1zM18 21h1v1h-1zM22 21h6v1h-6zM29 21h4v1h-4zM2 22h2v1h-2zM6 22h1v1h-1zM8 22h2v1h-2zM11 22h1v1h-1zM16 22h1v1h-1zM20 22h2v1h-2zM27 22h1v1h-1zM29 22h3v1h-3zM33 22h1v1h-1zM2 23h1v1h-1zM4 23h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM17 23h3v1h-3zM24 23h3v1h-3zM29 23h1v1h-1zM31 23h1v1h-1zM34 23h1v1h-1zM2 24h1v1h-1zM5 24h4v1h-4zM10 24h1v1h-1zM13 24h1v1h-1zM15 24h1v1h-1zM20 24h1v1h-1zM22 24h2v1h-2zM30 24h1v1h-1zM32 24h2v1h-2zM2 25h1v1h-1zM7 25h1v1h-1zM12 25h3v1h-3zM18 25h1v1h-1zM20 25h5v1h-5zM26 25h1v1h-1zM29 25h1v1h-1zM31 25h2v1h-2zM34 25h1v1h-1zM2 26h1v1h-1zM4 26h1v1h-1zM6 26h1v1h-1zM8 26h1v1h-1zM13 26h1v1h-1zM15 26h2v1h-2zM19 26h3v1h-3zM26 26h5v1h-5zM10 27h1v1h-1zM13 27h3v1h-3zM18 27h6v1h-6zM26 27h1v1h-1zM30 27h1v1h-1zM32 27h3v1h-3zM2 28h7v1h-7zM11 28h5v1h-5zM17 28h3v1h-3zM25 28h2v1h-2zM28 28h1v1h-1zM30 28h1v1h-1zM32 28h2v1h-2zM2 29h1v1h-1zM8 29h1v1h-1zM10 29h1v1h-1zM12 29h2v1h-2zM18 29h6v1h-6zM25 29h2v1h-2zM30 29h3v1h-3zM34 29h1v1h-1zM2 30h1v1h-1zM4 30h3v1h-3zM8 30h1v1h-1zM10 30h1v1h-1zM13 30h1v1h-1zM16 30h3v1h-3zM21 30h1v1h-1zM26 30h6v1h-6zM2 31h1v1h-1zM4 31h3v1h-3zM8 31h1v1h-1zM10 31h1v1h-1zM12 31h1v1h-1zM14 31h1v1h-1zM17 31h1v1h-1zM19 31h3v1h-3zM24 31h4v1h-4zM30 31h5v1h-5zM2 32h1v1h-1zM4 32h3v1h-3zM8 32h1v1h-1zM10 32h2v1h-2zM15 32h5v1h-5zM22 32h1v1h-1zM24 32h2v1h-2zM28 32h2v1h-2zM31 32h2v1h-2zM2 33h1v1h-1zM8 33h1v1h-1zM11 33h2v1h-2zM14 33h2v1h-2zM17 33h1v1h-1zM20 33h1v1h-1zM23 33h1v1h-1zM25 33h1v1h-1zM30 33h3v1h-3zM2 34h7v1h-7zM10 34h2v1h-2zM14 34h1v1h-1zM17 34h1v1h-1zM19 34h1v1h-1zM21 34h1v1h-1zM24 34h1v1h-1zM26 34h4v1h-4zM31 34h1v1h-1zM33 34h1v1h-1z"/></svg></div>
+          <div class="meta"><b>免費全文</b><span>PubMed Central，無需帳號</span><span class="u">https://pmc.ncbi.nlm.nih.gov/articles/PMC11648729/</span></div>
+        </div>
+        <div class="qrcard">
+          <div class="qbox2"><svg viewBox="0 0 33 33" role="img" aria-label="期刊原文 QR Code" shape-rendering="crispEdges"><rect width="33" height="33" fill="#fff"/><path fill="#000" d="M2 2h7v1h-7zM13 2h4v1h-4zM21 2h1v1h-1zM24 2h7v1h-7zM2 3h1v1h-1zM8 3h1v1h-1zM13 3h2v1h-2zM17 3h4v1h-4zM22 3h1v1h-1zM24 3h1v1h-1zM30 3h1v1h-1zM2 4h1v1h-1zM4 4h3v1h-3zM8 4h1v1h-1zM10 4h1v1h-1zM14 4h1v1h-1zM18 4h1v1h-1zM24 4h1v1h-1zM26 4h3v1h-3zM30 4h1v1h-1zM2 5h1v1h-1zM4 5h3v1h-3zM8 5h1v1h-1zM10 5h1v1h-1zM13 5h1v1h-1zM17 5h6v1h-6zM24 5h1v1h-1zM26 5h3v1h-3zM30 5h1v1h-1zM2 6h1v1h-1zM4 6h3v1h-3zM8 6h1v1h-1zM10 6h1v1h-1zM19 6h3v1h-3zM24 6h1v1h-1zM26 6h3v1h-3zM30 6h1v1h-1zM2 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h1v1h-1zM14 7h1v1h-1zM17 7h1v1h-1zM19 7h1v1h-1zM24 7h1v1h-1zM30 7h1v1h-1zM2 8h7v1h-7zM10 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h7v1h-7zM10 9h2v1h-2zM2 10h1v1h-1zM4 10h5v1h-5zM11 10h1v1h-1zM14 10h1v1h-1zM17 10h3v1h-3zM22 10h1v1h-1zM24 10h5v1h-5zM2 11h5v1h-5zM9 11h1v1h-1zM11 11h5v1h-5zM19 11h3v1h-3zM23 11h4v1h-4zM30 11h1v1h-1zM2 12h2v1h-2zM5 12h2v1h-2zM8 12h1v1h-1zM11 12h1v1h-1zM15 12h6v1h-6zM22 12h1v1h-1zM24 12h1v1h-1zM2 13h1v1h-1zM4 13h1v1h-1zM6 13h2v1h-2zM9 13h7v1h-7zM17 13h2v1h-2zM20 13h1v1h-1zM24 13h2v1h-2zM27 13h1v1h-1zM29 13h1v1h-1zM3 14h2v1h-2zM6 14h3v1h-3zM12 14h1v1h-1zM14 14h1v1h-1zM16 14h2v1h-2zM19 14h1v1h-1zM22 14h1v1h-1zM27 14h2v1h-2zM3 15h1v1h-1zM5 15h2v1h-2zM10 15h1v1h-1zM12 15h2v1h-2zM18 15h1v1h-1zM20 15h2v1h-2zM24 15h1v1h-1zM26 15h1v1h-1zM30 15h1v1h-1zM8 16h1v1h-1zM10 16h2v1h-2zM14 16h1v1h-1zM17 16h2v1h-2zM20 16h1v1h-1zM23 16h1v1h-1zM25 16h4v1h-4zM4 17h2v1h-2zM7 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM16 17h2v1h-2zM21 17h4v1h-4zM29 17h1v1h-1zM2 18h2v1h-2zM6 18h1v1h-1zM8 18h2v1h-2zM11 18h3v1h-3zM17 18h1v1h-1zM19 18h1v1h-1zM21 18h1v1h-1zM27 18h2v1h-2zM2 19h1v1h-1zM6 19h1v1h-1zM9 19h3v1h-3zM13 19h1v1h-1zM15 19h2v1h-2zM18 19h4v1h-4zM23 19h4v1h-4zM28 19h1v1h-1zM30 19h1v1h-1zM2 20h1v1h-1zM8 20h1v1h-1zM10 20h2v1h-2zM14 20h5v1h-5zM25 20h1v1h-1zM28 20h1v1h-1zM2 21h1v1h-1zM4 21h3v1h-3zM9 21h5v1h-5zM15 21h1v1h-1zM24 21h2v1h-2zM29 21h1v1h-1zM2 22h1v1h-1zM4 22h2v1h-2zM8 22h2v1h-2zM11 22h2v1h-2zM14 22h1v1h-1zM16 22h2v1h-2zM19 22h1v1h-1zM22 22h5v1h-5zM28 22h3v1h-3zM10 23h5v1h-5zM18 23h5v1h-5zM26 23h5v1h-5zM2 24h7v1h-7zM12 24h2v1h-2zM17 24h2v1h-2zM20 24h3v1h-3zM24 24h1v1h-1zM26 24h3v1h-3zM2 25h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM12 25h1v1h-1zM16 25h1v1h-1zM18 25h1v1h-1zM22 25h1v1h-1zM26 25h1v1h-1zM2 26h1v1h-1zM4 26h3v1h-3zM8 26h1v1h-1zM10 26h5v1h-5zM19 26h1v1h-1zM22 26h5v1h-5zM28 26h1v1h-1zM2 27h1v1h-1zM4 27h3v1h-3zM8 27h1v1h-1zM10 27h1v1h-1zM14 27h3v1h-3zM18 27h1v1h-1zM20 27h2v1h-2zM23 27h1v1h-1zM27 27h4v1h-4zM2 28h1v1h-1zM4 28h3v1h-3zM8 28h1v1h-1zM10 28h2v1h-2zM14 28h1v1h-1zM16 28h3v1h-3zM20 28h1v1h-1zM23 28h7v1h-7zM2 29h1v1h-1zM8 29h1v1h-1zM11 29h1v1h-1zM14 29h3v1h-3zM18 29h1v1h-1zM21 29h2v1h-2zM24 29h1v1h-1zM26 29h2v1h-2zM29 29h1v1h-1zM2 30h7v1h-7zM10 30h1v1h-1zM12 30h1v1h-1zM14 30h1v1h-1zM19 30h2v1h-2zM24 30h3v1h-3zM28 30h1v1h-1z"/></svg></div>
+          <div class="meta"><b>期刊原文</b><span>DOI，連至 JAMIA</span><span class="u">https://doi.org/10.1093/jamia/ocae278</span></div>
+        </div>
+      </div>
+    </header>
+
+    <section id="map">
+      <h2>摘要</h2>
+      <p class="sectnote">依原文 Abstract 重述，非逐字引用。</p>
+      <ul class="maplist">
+        <li><span class="sec">研究目的</span><span class="say">回顧急性後期照護場域中用於感染早期診斷與預後預測的機器學習模型，辨認影響感染結果的關鍵風險預測因子，並檢視這些模型的品質與限制。</span></li>
+        <li><span class="sec">研究方法</span><span class="say">檢索 PubMed、Web of Science、Scopus、IEEE Xplore、CINAHL 與 ACM Digital Library 六個資料庫至 2024 年 2 月，限英文、不限出版年；以 CHARMS 萃取資料、PROBAST 評估偏差風險，並以社會生態架構歸類風險預測因子。</span></li>
+        <li><span class="sec">研究結果</span><span class="say">共納入 13 篇，集中於護理之家與呼吸道感染，多數使用結構化電子病歷搭配傳統迴歸模型。2020 年後轉向進階機器學習與多模態資料，生物感測訊號與臨床敘事紀錄成為非結構化資料的主要來源。</span></li>
+        <li><span class="sec">主要發現</span><span class="say">現有證據不足以支持進階模型的效能優於傳統迴歸。預測因子集中於認知功能障礙、功能下降、心搏過速等個人層次，情境層次因子極少使用，因而限制模型公平性。</span></li>
+        <li><span class="sec">偏差來源</span><span class="say">缺乏外部驗證、模型校準不足，以及未妥善處理資料複雜度。</span></li>
+        <li><span class="sec">結論</span><span class="say">儘管建模方法持續進展，支持其優越性的證據仍然有限。</span></li>
+      </ul>
+      <div class="concept" style="margin-top:22px">
+        <h3 style="margin-top:0">證據為什麼沒有跟著變強</h3>
+        <p style="margin:0 0 12px">問題不在演算法不夠先進，而在研究方法本身留下三個缺口：</p>
+        <ul class="maplist" style="margin-bottom:14px">
+          <li><span class="sec">沒有外部驗證</span><span class="say">92% 的模型只在自己那批資料上考過試，從未換另一批住民或另一家機構檢驗，因此不知道換個場域還準不準。</span></li>
+          <li><span class="sec">校準證據不足</span><span class="say">69% 未做模型校準，也就是沒有檢查「模型說 30% 風險的人，實際是不是真的約 30% 發生」。AUC 高只代表排序能力好，不代表預測的機率可信。</span></li>
+          <li><span class="sec">資料結構未妥善處理</span><span class="say">同一位住民一年可能感染多次，多數研究沒有處理這種重複事件與縱貫資料，只有 16% 使用了 GEE 或混合效應模型。</span></li>
+        </ul>
+        <p style="margin:0">再加上各研究的族群、感染定義、結果指標與資料集都不同，根本無法在相同條件下比較誰比較好。所以不是「進階模型沒有比較好」，而是<b>現有研究的設計還不足以證明它比較好</b>。</p>
+      </div>
+    </section>
+
+    <section id="prisma">
+      <h2>搜尋與篩選流程</h2>
+      <p class="sectnote">依原文 Figure 2 重繪。點任一方框看它的意義。</p>
+
+      <div class="vizwrap">
+        <div class="flowgrid">
+          <div class="stagecol2">
+            <div class="stg">文獻搜尋<br>及鑑別</div>
+            <div class="stg">文獻篩選</div>
+            <div class="stg">符合<br>納入條件</div>
+            <div class="stg">納入分析</div>
+          </div>
+
+          <div class="flowcol">
+            <div class="dbrow">
+              <div class="db"><div class="nm">PubMed</div><div class="ct">1,417</div><div class="pb" style="width:84%"></div></div>
+              <div class="db"><div class="nm">Web of Science</div><div class="ct">193</div><div class="pb" style="width:11%"></div></div>
+              <div class="db"><div class="nm">Scopus</div><div class="ct">1,685</div><div class="pb" style="width:100%"></div></div>
+              <div class="db"><div class="nm">CINAHL</div><div class="ct">209</div><div class="pb" style="width:12%"></div></div>
+              <div class="db"><div class="nm">ACM Library</div><div class="ct">144</div><div class="pb" style="width:9%"></div></div>
+              <div class="db"><div class="nm">IEEE Xplore</div><div class="ct">42</div><div class="pb" style="width:3%"></div></div>
+            </div>
+            <div class="vdown">↓</div>
+            <button class="fbox" data-step="a" aria-pressed="false"><span class="lb">檢索總篇數</span><span class="nn">3,690</span></button>
+            <div class="vdown">↓</div>
+
+            <button class="fbox" data-step="b" aria-pressed="false"><span class="lb">刪除重複文獻後</span><span class="nn">3,115</span></button>
+            <div class="splitrow">
+              <div class="vdown">↓</div>
+              <div class="arrowh"></div>
+              <div class="exbox"><div class="hd2">排除 3,072 篇</div>題目與摘要篩選後排除</div>
+            </div>
+
+            <button class="fbox" data-step="c" aria-pressed="false"><span class="lb">全文評讀</span><span class="nn">43</span></button>
+            <div class="splitrow">
+              <div class="vdown">↓</div>
+              <div class="arrowh"></div>
+              <div class="exbox">
+                <div class="hd2">全文階段排除 30 篇</div>
+                <ul>
+                  <li>並非純粹使用急性後期照護資料 11 篇</li>
+                  <li>結果變項不符 3 篇</li>
+                  <li>缺乏模型建立或評估細節 13 篇</li>
+                  <li>研究目的不符 1 篇</li>
+                  <li>無法取得全文 1 篇</li>
+                </ul>
+              </div>
+            </div>
+
+            <button class="fbox" data-step="d" aria-pressed="false"><span class="lb">納入質性分析之文獻</span><span class="nn">13</span></button>
+            <div class="handrow">
+              <div class="handbox">手動查找 0 篇</div>
+              <div class="arrowh"></div>
+              <div></div>
+            </div>
+            <button class="fbox" data-step="e" aria-pressed="false"><span class="lb">最終納入分析之文獻</span><span class="nn">13</span></button>
+          </div>
+        </div>
+
+        <div class="stepdetail" id="stepdetail" aria-live="polite">
+          <h4>先看整體</h4>
+          <p>從 3,690 篩到 13，留下率不到千分之四。這個數字本身就是訊息：這個領域的研究量非常少，少到無法做統合分析，只能一篇一篇描述。</p>
+        </div>
+      </div>
+
+      <div class="vizwrap">
+        <div class="vizhead"><h3>這篇要回答的三個研究問題</h3><span class="hint">原文 Figure 2B</span></div>
+        <div class="rqgrid">
+          <div class="rq">
+            <h4>RQ1　預測因子</h4>
+            <p>急性後期照護的感染診斷與預後模型用了哪些風險預測因子？資料來源與型態有多少變化？</p>
+            <ul><li>預測因子與其分類</li><li>資料型態與來源</li><li>目前的資料挑戰</li></ul>
+          </div>
+          <div class="rq">
+            <h4>RQ2　模型與準確度</h4>
+            <p>現有哪些機器學習模型可用於個人化的感染診斷與預後？準確度如何？</p>
+            <ul><li>使用的演算法</li><li>目標感染類型與場域</li><li>驗證方式與評估指標</li><li>模型效能</li><li>模型轉譯與可解釋性策略</li></ul>
+          </div>
+          <div class="rq">
+            <h4>RQ3　限制與缺陷</h4>
+            <p>這些模型有哪些限制與方法學缺陷？什麼因素阻礙了臨床應用？</p>
+            <ul><li>評估研究的偏差風險</li><li>辨認臨床落地的挑戰</li><li>提出後續研究建議</li></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="studies">
+      <h2>13 篇研究，一篇一篇看</h2>
+      <p class="sectnote">用下方條件篩選，點研究看它的模型、資料與效能白話解讀。</p>
+      <div class="vizwrap">
+        <div class="vizhead"><h3>2000–2022 年：研究目的在 2020 年轉向</h3><span class="hint">點圓點可帶出那篇的細節</span></div>
+        <svg id="timeline" viewBox="0 0 760 240" role="img" aria-label="13 篇研究的年代與模型目的分布"></svg>
+        <div class="legend">
+          <span><span class="swatch" style="background:var(--trace)"></span>診斷型：預測會不會感染</span>
+          <span><span class="swatch" style="background:var(--blue)"></span>預後型：預測感染後會不會死</span>
+        </div>
+        <p class="note-inline">二十年間只有 13 篇，而且 2019 年以前只有 3 篇。右半邊的密集是 COVID-19 推出來的，也是在那之後，研究才從「事後估計存活」轉向「事前預警」。</p>
+      </div>
+      <div class="filters" id="filters">
+        <button class="chip" data-f="all" aria-pressed="true">全部 13 篇</button>
+        <button class="chip" data-f="NH" aria-pressed="false">護理之家</button>
+        <button class="chip" data-f="LTC" aria-pressed="false">長照機構</button>
+        <button class="chip" data-f="HHC" aria-pressed="false">居家照護</button>
+        <button class="chip" data-f="dx" aria-pressed="false">診斷型</button>
+        <button class="chip" data-f="px" aria-pressed="false">預後型</button>
+        <button class="chip" data-f="multi" aria-pressed="false">多模態資料</button>
+        <button class="chip" data-f="ml" aria-pressed="false">進階 ML</button>
+      </div>
+      <div class="studygrid">
+        <div class="rows" id="rows"></div>
+        <div class="panel" id="panel"></div>
+      </div>
+      <div class="vizwrap" style="margin-top:20px">
+        <div class="vizhead"><h3>13 篇納入文獻完整清單</h3><span class="hint">編號為原文參考文獻序號</span></div>
+        <ul class="reflist">
+          <li><span class="rn">34</span><span class="ti">Lee, D. S., Wang, C. X., McAlister, F. A., 等 (2022). <b>Factors associated with SARS-CoV-2 test positivity in long-term care homes: A population-based cohort analysis using machine learning.</b><span class="jr">The Lancet Regional Health – Americas, 6, 100146.</span><span class="doi">https://doi.org/10.1016/j.lana.2021.100146</span></span></li>
+          <li><span class="rn">35</span><span class="ti">Lee, J. S., Ma, S., Chu, A., CORONA Collaboration, 等 (2021). <b>Predictors of mortality among long-term care residents with SARS-CoV-2 infection.</b><span class="jr">Journal of the American Geriatrics Society, 69, 3377–3388.</span><span class="doi">https://doi.org/10.1111/jgs.17425</span></span></li>
+          <li><span class="rn">47</span><span class="ti">Tan, P. Y., Huo, M., Zhou, X. H., &amp; Zhao, B. L. (2022). <b>Development and validation of a nomogram for predicting the risk of nursing home-acquired pneumonia.</b><span class="jr">European Review for Medical and Pharmacological Sciences, 26(22), 8276–8288.</span><span class="doi">https://doi.org/10.26355/eurrev_202211_30360</span></span></li>
+          <li><span class="rn">48</span><span class="ti">Baldominos, A., Ogul, H., Colomo-Palacios, R., Sanz-Moreno, J., &amp; Gómez-Pulido, J. M. (2020). <b>Infection prediction using physiological and social data in social environments.</b><span class="jr">Information Processing &amp; Management, 57(3), 102213.</span><span class="doi">https://doi.org/10.1016/j.ipm.2020.102213</span></span></li>
+          <li><span class="rn">49</span><span class="ti">Garcés-Jiménez, A., Calderón-Gómez, H., Gómez-Pulido, J. M., 等 (2021). <b>Medical prognosis of infectious diseases in nursing homes by applying machine learning on clinical data collected in cloud microservices.</b><span class="jr">International Journal of Environmental Research and Public Health, 18(24), 13278.</span><span class="doi">https://doi.org/10.3390/ijerph182413278</span></span></li>
+          <li><span class="rn">50</span><span class="ti">Mehr, D. R., Binder, E. F., Kruse, R. L., 等 (2001). <b>Predicting mortality in nursing home residents with lower respiratory tract infection: The Missouri LRI study.</b><span class="jr">JAMA, 286(19), 2427–2436.</span><span class="doi">https://doi.org/10.1001/jama.286.19.2427</span></span></li>
+          <li><span class="rn">51</span><span class="ti">Naughton, B. J., Mylotte, J. M., &amp; Tayara, A. (2000). <b>Outcome of nursing home-acquired pneumonia: Derivation and application of a practical model to predict 30 day mortality.</b><span class="jr">Journal of the American Geriatrics Society, 48(10), 1292–1299.</span><span class="doi">https://doi.org/10.1111/j.1532-5415.2000.tb02604.x</span></span></li>
+          <li><span class="rn">52</span><span class="ti">Panagiotou, O. A., Kosar, C. M., White, E. M., 等 (2021). <b>Risk factors associated with all-cause 30-day mortality in nursing home residents with COVID-19.</b><span class="jr">JAMA Internal Medicine, 181, 439–448.</span><span class="doi">https://doi.org/10.1001/jamainternmed.2020.7968</span></span></li>
+          <li><span class="rn">53</span><span class="ti">Rauh, S. P., Heymans, M. W., van der Maaden, T., 等 (2019). <b>Predicting mortality in nursing home residents with dementia and pneumonia treated with antibiotics: Validation of a prediction model in a more recent population.</b><span class="jr">The Journals of Gerontology: Series A, 74(12), 1922–1928.</span><span class="doi">https://doi.org/10.1093/gerona/gly260</span></span></li>
+          <li><span class="rn">54</span><span class="ti">van der Steen, J. T., Mehr, D. R., Kruse, R. L., 等 (2006). <b>Predictors of mortality for lower respiratory infections in nursing home residents with dementia were validated transnationally.</b><span class="jr">Journal of Clinical Epidemiology, 59(9), 970–979.</span><span class="doi">https://doi.org/10.1016/j.jclinepi.2005.12.005</span></span></li>
+          <li><span class="rn">55</span><span class="ti">Ramazi, R., Bowen, M. E., Flynn, A. J., &amp; Beheshti, R. (2022). <b>Developing acute event risk profiles for older adults with dementia in long-term care using motor behavior clusters derived from deep learning.</b><span class="jr">Journal of the American Medical Directors Association, 23, 1977–1983.e1.</span><span class="doi">https://doi.org/10.1016/j.jamda.2022.04.009</span></span></li>
+          <li><span class="rn">56</span><span class="ti">Shang, J., Russell, D., Dowding, D., 等 (2020). <b>A predictive risk model for infection-related hospitalization among home healthcare patients.</b><span class="jr">Journal for Healthcare Quality, 42(3), 136–147.</span><span class="doi">https://doi.org/10.1097/JHQ.0000000000000214</span></span></li>
+          <li><span class="rn">57</span><span class="ti">Song, J., Woo, K., Shang, J., Ojo, M., &amp; Topaz, M. (2021). <b>Predictive risk models for wound infection-related hospitalization or ED visits in home health care using machine-learning algorithms.</b><span class="jr">Advances in Skin &amp; Wound Care, 34(8), 1–12.</span><span class="doi">https://doi.org/10.1097/01.Asw.0000755928.30524.22</span></span></li>
+        </ul>
+        <p class="note-inline">題目逐字取自原文參考文獻；期號與部分 DOI 為原文省略，已另行查證補齊。標示「等」的作者群，原文即以 et al. 省略，若報告需要完整作者名單，請連到該篇原始文獻補齊。</p>
+      </div>
+      <div class="warn"><b>已與原文核對。</b>上表的場域、感染類型、演算法、多模態標記與效能數值，皆已對照原文 Table 1 與 Table 2 確認無誤。</div>
+    </section>
+
+    <section id="modal">
+      <p class="rqtag"><span>RQ1</span>預測因子與資料來源</p>
+      <h2>多模態資料是什麼</h2>
+      <p class="sectnote">模態就是資料的「型態」。只用一種是單模態，混用兩種以上就是多模態。</p>
+      <div class="twoup">
+        <div class="concept">
+          <h3 style="margin-top:0">單模態（多數研究）</h3>
+          <div class="flow">
+            <span class="node">結構化電子病歷</span><span class="arrow">→</span><span class="node">模型</span>
+          </div>
+          <p style="margin-top:16px; font-size:.93rem; color:var(--ink-soft)">就是已經整理成欄位的資料：年齡、生命徵象、ADL 分數、診斷碼、MDS 或 OASIS 評估結果。優點是現成、乾淨；缺點是只看得到被記錄下來的東西。</p>
+        </div>
+        <div class="concept">
+          <h3 style="margin-top:0">多模態（2020 年後增加）</h3>
+          <div class="flow">
+            <span class="node alt">生物感測訊號</span><span class="node alt">臨床文字紀錄</span><span class="node alt">結構化病歷</span><span class="arrow">→</span><span class="node">模型</span>
+          </div>
+          <p style="margin-top:16px; font-size:.93rem; color:var(--ink-soft)">加入穿戴式或環境感測器的連續訊號、室內定位資料，以及護理紀錄的自由文字。原文指出感測器與臨床紀錄是非結構化資料的兩大來源。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="predictors">
+      <p class="rqtag"><span>RQ1</span>預測因子與資料來源</p>
+      <h2>模型都在看哪一層的因素</h2>
+      <p class="sectnote">作者用社會生態架構把風險預測因子分成五層。點任一層看它包含什麼、本綜述用了多少。</p>
+      <div class="vizwrap">
+        <div class="pyrlayout">
+          <svg id="pyramid" viewBox="0 0 420 310" role="img" aria-label="社會生態五層架構金字塔"></svg>
+          <div class="pyrinfo" id="pyrinfo"></div>
+        </div>
+      </div>
+      <div class="warn"><b>一個值得注意的空白。</b>原文指出模型幾乎只用個人層次因子，等於預設「感染風險來自這個人本身」。住宿型機構恰好是最容易取得機構層次資料的場域——人力配置、床位密度、共用設備與清消紀錄、訪客與外出頻率、群聚事件史。這是現有文獻的空白，也是在地研究可以切入的地方。</div>
+    </section>
+
+    <section id="algo">
+      <p class="rqtag"><span>RQ2</span>模型與準確度</p>
+      <h2>這些演算法到底在做什麼</h2>
+      <p class="sectnote">同一批住民資料，換一種演算法就是換一種判斷方式。選一個，動手試試看它怎麼做決定。</p>
+
+      <div class="algopicker" id="algopicker"></div>
+
+      <div class="algolab">
+        <div class="stage">
+          <p class="stagetitle" id="stagetitle">示範</p>
+          <div id="stagebody"></div>
+          <div class="ctl" id="stagectl"></div>
+        </div>
+        <aside class="side">
+          <h3 id="algoname"></h3>
+          <p class="usage" id="algousage"></p>
+          <p id="algowhat"></p>
+          <p class="explain" id="algoclin"></p>
+          <p class="note-inline" id="algonote"></p>
+        </aside>
+      </div>
+
+      <div class="warn" style="margin-top:22px"><b>常見誤讀。</b>主成分分析與深度時間聚類在原文屬於「特徵選取」而非模型開發，歸類時要放在挑變項那一類。線性混合效應模型與 GEE 則是用來處理重複測量，各佔 8%。</div>
+    </section>
+
+    <section id="auc">
+      <p class="rqtag"><span>RQ2</span>模型與準確度</p>
+      <h2>AUC 到底在講什麼</h2>
+      <p class="sectnote">拉動滑桿，看模型把「會感染」和「不會感染」的人分開的程度。</p>
+      <div class="concept">
+        <div class="aucstage">
+          <div>
+            <svg id="dist" viewBox="0 0 600 210" role="img" aria-label="兩群住民風險分數分布的重疊程度示意圖">
+              <g id="distg"></g>
+            </svg>
+            <div class="legend">
+              <span><span class="swatch" style="background:var(--blue)"></span>未感染的住民</span>
+              <span><span class="swatch" style="background:var(--flag)"></span>後來感染的住民</span>
+              <span><span class="swatch" style="background:var(--muted)"></span>判斷分界點</span>
+            </div>
+            <input type="range" id="aucslider" min="50" max="99" value="80" step="1" aria-label="調整 AUC">
+            <div class="presets" id="presets">
+              <button class="chip" data-auc="69">0.69 Ramazi</button>
+              <button class="chip" data-auc="74">0.74 Naughton</button>
+              <button class="chip" data-auc="80">0.80 Rauh</button>
+              <button class="chip" data-auc="93">0.934 Lee 2022</button>
+              <button class="chip" data-auc="96">0.958 Tan</button>
+            </div>
+          </div>
+          <div>
+            <div class="readout" id="aucval">0.80
+              <small id="aucsay"></small>
+            </div>
+            <div class="sens">
+              <span>敏感度 <b id="sens">—</b></span>
+              <span>特異度 <b id="spec">—</b></span>
+            </div>
+            <p style="font-size:.85rem; color:var(--muted); margin-top:10px">以兩群中間為分界時的數值。移動分界可以拉高其中一邊，但另一邊會下降。</p>
+          </div>
+        </div>
+      </div>
+      <div class="vizwrap">
+        <div class="vizhead"><h3>12 篇的分數放在一起看</h3><span class="hint">切換排序方式</span></div>
+        <div class="toggle">
+          <button class="chip" data-sort="score" aria-pressed="true">依分數高低</button>
+          <button class="chip" data-sort="year" aria-pressed="false">依發表年代</button>
+        </div>
+        <svg id="aucchart" viewBox="0 0 760 400" role="img" aria-label="各研究最佳 AUC 比較"></svg>
+        <p class="note-inline">橫軸從 0.5（等於丟銅板）起算。Garcés 2021 報的是 Accuracy 1.00，指標不同，沒有放進這張圖。切成年代排序可以看出：分數並沒有隨著年份往上走。</p>
+      </div>
+      <div class="concept">
+        <h3 style="margin-top:0">一句話定義</h3>
+        <p style="margin:0">隨機抽一位後來感染的住民、和一位沒感染的住民，模型給感染那位比較高的風險分數的機率，就是 AUC。0.5 等於丟銅板，1.0 等於完全分得開。</p>
+        <h3>怎麼判讀常見數值</h3>
+        <div class="algos">
+          <div class="algo"><span class="name">0.50–0.60</span><span></span><span class="what">幾乎沒有辨別力</span></div>
+          <div class="algo"><span class="name">0.70 左右</span><span></span><span class="what">勉強可用，約每 10 對有 3 對排錯</span></div>
+          <div class="algo"><span class="name">0.80 左右</span><span></span><span class="what">臨床預測模型常見的水準</span></div>
+          <div class="algo"><span class="name">0.90 以上</span><span></span><span class="what">很高，但要先懷疑：是不是結果太好認、或資料外洩</span></div>
+        </div>
+        <div class="warn"><b>最重要的一句。</b>AUC 高只代表排序能力好，不代表預測的機率是準的，也不代表換一批人還會這麼準。原文明講不同研究的 AUC 不能互相比較，因為族群、感染定義、事件率與時間窗都不同。</div>
+      </div>
+    </section>
+
+    <section id="headtohead">
+      <p class="rqtag"><span>RQ2</span>模型與準確度</p>
+      <h2>頭對頭：全篇最高分與最低分</h2>
+      <p class="sectnote">知道 AUC 怎麼讀之後，就可以看這兩篇了。</p>
+      <div class="concept">
+        <p style="margin:0 0 14px">這兩篇都發表於 2022 年，都是診斷型模型，分數卻差了 0.27。但差距的來源不是演算法好壞——把條件攤開來看就明白了。</p>
+        <div class="cmp">
+          <div class="k hd"></div>
+          <div class="hd a">Tan 2022<small>全篇最高分</small></div>
+          <div class="hd b">Ramazi 2022<small>全篇最低分</small></div>
+
+          <div class="k">最佳表現</div>
+          <div class="a"><span class="big">0.958</span> C-statistic</div>
+          <div class="b"><span class="big">0.69</span> AUC（另報 AUPRC 0.70）</div>
+
+          <div class="k">演算法</div>
+          <div class="a">邏輯斯迴歸（諾莫圖）</div>
+          <div class="b">深度時間聚類 ＋ CART 決策樹</div>
+
+          <div class="k">資料模態</div>
+          <div class="a">單模態：結構化電子病歷</div>
+          <div class="b">多模態：穿戴式與室內定位訊號 ＋ 電子病歷</div>
+
+          <div class="k">場域與族群</div>
+          <div class="a">護理之家住民</div>
+          <div class="b">長照機構失智症住民</div>
+
+          <div class="k">預測目標</div>
+          <div class="a">護理之家肺炎（NHAP）</div>
+          <div class="b">泌尿道感染與跌倒、譫妄等急性事件</div>
+
+          <div class="k">報告的指標</div>
+          <div class="a">僅區分度</div>
+          <div class="b">同時報 AUPRC，全篇唯一</div>
+        </div>
+
+        <h3>為什麼不能直接比這兩個數字</h3>
+        <ul class="maplist" style="margin-bottom:0">
+          <li><span class="sec">結果定義不同</span><span class="say">肺炎與泌尿道感染的診斷標準、判定時機都不一樣。預測「肺炎」和預測「泌尿道感染」本來就是兩種難度的題目。</span></li>
+          <li><span class="sec">族群不同</span><span class="say">一邊是一般護理之家住民，一邊是失智症住民。失智住民無法主訴不適，連標準答案本身都比較難確立。</span></li>
+          <li><span class="sec">資料的「熟度」不同</span><span class="say">結構化電子病歷是人已經判讀整理過的資料；定位訊號是原始的動作軌跡，模型得自己從雜訊裡找出意義。起點不一樣。</span></li>
+          <li><span class="sec">事件發生率不同</span><span class="say">AUC 會受到結果事件多寡影響，兩篇的感染發生率不同，分數的意義就不同。</span></li>
+          <li><span class="sec">指標本身不同</span><span class="say">Tan 報的是 C-statistic，Ramazi 另外報了 AUPRC。在感染這類「沒感染的人遠多於感染的人」的不平衡資料上，AUPRC 是更誠實的指標——而全篇只有這一篇報了它。</span></li>
+        </ul>
+
+        <div class="verdict">
+          <div class="no"><b>✕ 不能這樣說</b>「邏輯斯迴歸比深度學習準」「多模態資料沒有用」「Tan 的模型比較好」。兩篇的題目不同，分數不具可比性。</div>
+          <div class="yes"><b>✓ 可以這樣說</b>「演算法比較新、資料比較多元，不保證臨床預測能力比較好」。這正是原文的核心論點——不論以「迴歸 vs 非迴歸」或「多模態 vs 單模態」比較，都沒有觀察到明顯的區分度優勢。</div>
+        </div>
+
+        <div class="warn" style="margin-top:18px"><b>一句話總結。</b>這兩篇放在一起，不是為了比出誰贏，而是為了說明：在現有的研究設計下，我們根本沒有辦法比。</div>
+      </div>
+    </section>
+
+    <section id="calib">
+      <p class="rqtag"><span>RQ3</span>限制與缺陷</p>
+      <h2>只看 AUC 會漏掉的兩件事</h2>
+      <p class="sectnote">這兩張圖就是 PROBAST 判定 92% 高偏差風險的核心理由。</p>
+      <div class="twoup">
+        <div class="concept">
+          <h3 style="margin-top:0">校準：說 30% 就真的是 30% 嗎</h3>
+          <div class="toggle">
+            <button class="chip" data-cal="bad" aria-pressed="true">校準不良</button>
+            <button class="chip" data-cal="good" aria-pressed="false">校準良好</button>
+          </div>
+          <svg id="calsvg" viewBox="0 0 320 240" role="img" aria-label="預測機率與實際發生率的校準圖"></svg>
+          <p style="margin:12px 0 0; font-size:.92rem; color:var(--ink-soft)">橫軸是模型預測的風險，縱軸是實際發生率。落在對角線上代表說幾成就是幾成。曲線偏離時，模型可能把中風險的人說成高風險，讓你把人力放錯地方。原文：69% 的研究未做校準評估。</p>
+        </div>
+        <div class="concept">
+          <h3 style="margin-top:0">外部驗證：換一批人還準嗎</h3>
+          <div class="flow" style="margin-top:0">
+            <span class="node">同一家機構的資料</span><span class="arrow">→</span><span class="node">訓練</span><span class="arrow">→</span><span class="node">在自己的資料上測試</span>
+          </div>
+          <p style="margin:14px 0; font-size:.92rem; color:var(--ink-soft)">這叫內部驗證，像自己出題自己考。</p>
+          <div class="flow" style="margin-top:0">
+            <span class="node alt">另一家機構<br>或另一個時期</span><span class="arrow">→</span><span class="node alt">拿模型直接測</span>
+          </div>
+          <p style="margin:14px 0 0; font-size:.92rem; color:var(--ink-soft)">這才是外部驗證。原文：<b style="color:var(--flag)">92% 的研究沒有做</b>。這也是為什麼沒有一篇可以直接套用到其他機構——必須先做在地驗證與重新校準。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="conclusion">
+      <h2>讀完這篇文章的結論</h2>
+      <p class="sectnote">前半是原文的結論，後半是讀完之後對住宿長照的意義。</p>
+
+      <div class="vizwrap">
+        <div class="vizhead"><h3>原文自己怎麼收尾</h3><span class="hint">依原文 Conclusion 重述</span></div>
+        <p style="font-size:1.05rem; line-height:1.8; margin:0 0 14px">儘管急性後期照護場域中感染相關模型的建模方法持續進展，<b>支持其優越性的證據仍然有限</b>。</p>
+        <p class="note-inline">注意這個句型。作者沒有說「AI 沒用」，也沒有說「AI 很好」，而是說「證據還不足以判斷」。這種對不確定性誠實的表述方式，和很多 AI 論文誇大結論的寫法形成對比。</p>
+      </div>
+
+      <div class="vizwrap">
+        <div class="vizhead"><h3>別把建議當成結論</h3><span class="hint">三者是不同層次</span></div>
+        <div class="cmp" style="grid-template-columns:110px minmax(0,1fr)">
+          <div class="k hd">結論</div>
+          <div class="hd a">建模方法持續進展，但<b>支持其優越性的證據仍然有限</b></div>
+          <div class="k">偏差來源</div>
+          <div>92% 未做外部驗證、69% 未做校準、多數未妥善處理重複事件與縱貫資料</div>
+          <div class="k">建議</div>
+          <div>未來應強化外部驗證、模型校準、公平性與真實世界臨床效益</div>
+        </div>
+        <p class="note-inline">外部驗證是<b>建議</b>，不是結論。而且就算 13 篇全部都做了外部驗證，仍然答不出「XGBoost 比邏輯斯迴歸好嗎」——因為各研究的族群、感染定義與結果指標本來就不在同一個基準上。問題不在單一技術缺陷，而在整個領域還沒有建立起「可以互相比較」的研究基礎。</p>
+      </div>
+
+      <h3>四個帶得走的重點</h3>
+      <ul class="maplist">
+        <li><span class="sec">① 有潛力</span><span class="say">感染預測模型正從傳統迴歸走向進階機器學習與多模態資料，2020 年後明顯加速。</span></li>
+        <li><span class="sec">② 複雜不等於更好</span><span class="say">不論以「迴歸 vs 非迴歸」或「多模態 vs 單模態」比較，都沒有觀察到明顯的區分度優勢。</span></li>
+        <li><span class="sec">③ 問題在方法品質</span><span class="say">92% 沒做外部驗證、69% 沒做校準、多數未處理同一住民反覆事件的資料結構。瓶頸不是演算法不夠先進。</span></li>
+        <li><span class="sec">④ 導入前必須驗證</span><span class="say">未來應強化外部驗證、模型校準、公平性，以及真實世界的臨床效益評估。</span></li>
+      </ul>
+
+      <div class="concept" style="margin-top:22px">
+        <h3 style="margin-top:0">這篇研究真正的貢獻</h3>
+        <p style="margin:0">它把一個看似熱鬧的研究領域，<b>從「有多少模型」重新定義成「有多少可信的模型」</b>。答案是：13 篇裡，沒有一篇可以直接拿來用——因為幾乎沒有一篇在別的族群、別的機構驗證過。</p>
+      </div>
+
+      <h3>對住宿式長照機構的意義</h3>
+      <div class="verdict" style="grid-template-columns:1fr 1fr">
+        <div class="yes"><b>✓ 方向是對的</b>這些模型用的原料——體溫、血氧、進食量、活動力、ADL 變化、認知變化——就是機構每天都在記錄的資料。不需要先買新設備才能開始。</div>
+        <div class="no"><b>✕ 但不能直接搬</b>沒有一篇做過外部驗證，也就無從得知換到台灣的住宿機構還準不準。要用，必須先在自己的場域重新驗證與校準。</div>
+      </div>
+
+      <div class="warn" style="margin-top:18px"><b>還有一個缺口，剛好是機構的強項。</b>本文指出模型幾乎只用個人層次因子，機構層次幾乎沒人用。而人力配置、床位與住房密度、共用設備與清消紀錄、訪客與外出頻率、群聚事件史——這些正是住宿機構每天在產生、文獻卻還沒用上的資料。這是未來在地研究最容易切入的地方。</div>
+
+      <h3>未來要做機器學習，這四件事要先想清楚</h3>
+      <p style="margin:0 0 16px; font-size:.93rem; color:var(--ink-soft)">以下依原文 Figure 5 歸納的四大障礙整理。這些不是通則式的建議，而是這 13 篇真的踩過的坑。</p>
+      <div class="quad">
+        <div class="qbox">
+          <h4>① 資料能不能撐得起</h4>
+          <p class="en">Data Usage</p>
+          <ul>
+            <li><b>先算事件數，再決定變項數。</b>85% 的研究正向事件率低於 30%，46% 的事件數對變項數比值低於 10。手上真的發生過的案例有多少，決定了模型能放幾個變項。</li>
+            <li><b>同一位住民反覆發生要先想好怎麼算。</b>這是長照資料的常態，卻只有 16% 的研究處理了。</li>
+            <li><b>缺失值的規則要事先訂。</b>31% 的研究沒交代怎麼處理，只有 8% 使用多重插補。</li>
+            <li><b>多模態不是加了就好。</b>感測訊號與文字紀錄是機會，但要先確認資料拿得到、而且穩定。</li>
+          </ul>
+        </div>
+        <div class="qbox">
+          <h4>② 放哪些預測因子</h4>
+          <p class="en">Risk Predictors</p>
+          <ul>
+            <li><b>別只看住民本人。</b>現有模型幾乎只用個人層次因子。人力配置、床位密度、共用設備、群聚事件史這些機構層次資料，是文獻的空白。</li>
+            <li><b>結果定義要先立清楚。</b>長照住民感染表現不典型、共病又重疊，「什麼算一次感染」如果沒先定義好，後面所有數字都會失真。</li>
+            <li><b>社會決定因素要記得收。</b>種族、社經地位、居住安排的報告率低於 30%，這直接影響模型的公平性。</li>
+          </ul>
+        </div>
+        <div class="qbox">
+          <h4>③ 怎麼建、怎麼檢查</h4>
+          <p class="en">Modelling Approach</p>
+          <ul>
+            <li><b>校準要和區分度一起看。</b>不只問「分不分得出高低風險」，還要問「說 30% 是不是真的約 30% 發生」。69% 的研究沒做這件事。</li>
+            <li><b>公平性要主動檢查。</b>模型在不同族群、不同機構之間表現是否一致，不會自己浮現，要刻意去看。</li>
+            <li><b>先確認資料量撐不撐得起複雜模型。</b>本綜述中深度學習使用稀少，而唯一大量使用的那篇效能反而最低。</li>
+          </ul>
+        </div>
+        <div class="qbox">
+          <h4>④ 能不能真的用在臨床</h4>
+          <p class="en">Clinical Translation</p>
+          <ul>
+            <li><b>外部驗證不是可選項。</b>92% 沒做。原文並指出，沒有任何一個團隊在原始開發研究之外，做過後續外部驗證或實際部署。</li>
+            <li><b>模型準了，照護行為有沒有改變。</b>預測正確不等於有臨床效益，這一段在現有研究中幾乎是空白。</li>
+            <li><b>臨床人員要看得懂才會用。</b>可解釋性不是技術裝飾，是會不會被採用的關鍵。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="vizwrap" style="margin-top:22px">
+        <p style="font-size:1.08rem; line-height:1.8; margin:0; text-align:center">AI 模型的價值不能只看準確率，<br>而必須同時評估<b>驗證、校準、外推性與臨床效益</b>。</p>
+      </div>
+    </section>
+
+    <footer>
+      互動導讀依 Xu 等人 2025 年發表於 JAMIA 的系統性綜述整理，所有內容為重述而非原文引用。研究特性與效能數值請以原文 Table 1、Table 2 為準。
+    </footer>
+  </main>
+</div>
+</div>
+<button class="themebtn" id="themebtn">切換深色／淺色</button>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- theme ---------- */
+  var btn = document.getElementById('themebtn');
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    try{ localStorage.setItem('guide-theme', t); }catch(e){}
+    drawDist(); drawCal();
+  }
+  try{
+    var saved = localStorage.getItem('guide-theme');
+    if(saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+  }catch(e){}
+  btn.addEventListener('click', function(){
+    var cur = document.documentElement.getAttribute('data-theme');
+    if(!cur){
+      cur = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    setTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+  function token(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888';
+  }
+
+  /* ---------- rail scrollspy ---------- */
+  var railItems = Array.prototype.slice.call(document.querySelectorAll('#rail li'));
+  var sections = railItems.map(function(li){ return document.getElementById(li.dataset.t); });
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        var i = sections.indexOf(en.target);
+        if(i < 0) return;
+        if(en.isIntersecting){
+          railItems.forEach(function(li){ li.classList.remove('on'); });
+          railItems[i].classList.add('on');
+          for(var j=0;j<i;j++) railItems[j].classList.add('done');
+          for(var k=i;k<railItems.length;k++) railItems[k].classList.remove('done');
+        }
+      });
+    }, {rootMargin:'-45% 0px -50% 0px'});
+    sections.forEach(function(s){ if(s) io.observe(s); });
+  }
+
+  /* ---------- PRISMA steps ---------- */
+  var stepText = {
+    a:{h:'從哪裡找', p:'六個資料庫橫跨醫療與資訊工程。Scopus 與 PubMed 就貢獻了 3,102 篇，佔全部的 84%；IEEE Xplore 只有 42 篇。這個分布本身說明了一件事：這個題目主要還是長在醫護文獻裡，資訊工程端的投入相對少。檢索至 2024 年 2 月 29 日，限英文但不限出版年——正因不設年限，才撈得到 2000、2001、2006 年那幾篇，也才看得出 2020 年的轉向。'},
+    b:{h:'為什麼要去重', p:'同一篇文章會同時出現在好幾個資料庫。作者以 Bramer 方法去重，移除 575 篇。這一步不影響結論，但 PRISMA 要求透明交代每個階段的數字。'},
+    c:{h:'刷掉最多的一關', p:'題目與摘要篩選排除 3,072 篇，只剩 43 篇進入全文評讀。這一關刷掉了 98.6% 的文獻，多半是主題相關但場域不符、或根本不是預測模型研究。'},
+    d:{h:'全文階段為什麼還排除 30 篇', p:'最大宗的兩個理由分別是：13 篇缺乏模型建立或評估的細節，11 篇並非純粹使用急性後期照護資料。前者代表「有做模型但沒交代怎麼做」，後者代表「資料混雜了急性照護場域」。這兩點正好呼應全文主軸——問題出在研究方法與報告品質。'},
+    e:{h:'手動查找 0 篇的意義', p:'作者額外做了手動查找（追參考文獻、相關文獻），結果一篇都沒增加。這通常代表資料庫檢索策略已經夠完整，是方法嚴謹度的一個正面訊號。'}
+  };
+  var detail = document.getElementById('stepdetail');
+  Array.prototype.forEach.call(document.querySelectorAll('.fbox'), function(s){
+    s.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.fbox'), function(o){ o.setAttribute('aria-pressed','false'); });
+      s.setAttribute('aria-pressed','true');
+      var d = stepText[s.dataset.step];
+      detail.innerHTML = '<h4></h4><p></p>';
+      detail.querySelector('h4').textContent = d.h;
+      detail.querySelector('p').textContent = d.p;
+    });
+  });
+
+  /* ---------- studies ---------- */
+  var studies = [
+    {id:'lee22', ref:34, title:'Factors associated with SARS-CoV-2 test positivity in long-term care homes: a population-based cohort analysis using machine learning', who:'Lee 2022', set:'LTC', setName:'長期照護', aim:'dx', target:'呼吸道感染（SARS-CoV-2 確診）',
+     algo:'XGBoost', algoWhy:'一輪一輪修正前一輪猜錯的案例，表格型資料上通常表現最好，但層層疊加後不易解釋。',
+     modal:'單模態', data:'結構化電子病歷（個人與社區特徵）', auc:0.934, metric:'AUC 0.934（敏感度 0.887、特異度 0.869）', ml:true,
+     note:'本綜述中診斷型的高分組之一。敏感度與特異度都接近 0.87，代表分界點設在兩群中間，兩邊兼顧。'},
+    {id:'ramazi22', ref:55, title:'Developing acute event risk profiles for older adults with dementia in long-term care using motor behavior clusters derived from deep learning', who:'Ramazi 2022', set:'LTC', setName:'長期照護（失智症）', aim:'dx', target:'尿路感染與急性事件',
+     algo:'深度時間聚類 ＋ CART 決策樹', algoWhy:'先從連續訊號中找出反覆出現的行為型態，再用決策樹分流。',
+     modal:'多模態', data:'穿戴式與室內定位訊號 ＋ 電子病歷', auc:0.69, metric:'AUC 0.69（AUPRC 0.70）', ml:true,
+     note:'全篇唯一報告 AUPRC 的研究，這在感染這類不平衡資料上更誠實。也是「最進階的方法拿到最低 AUC」的那一篇。'},
+    {id:'tan22', ref:47, title:'Development and validation of a nomogram for predicting the risk of nursing home-acquired pneumonia', who:'Tan 2022', set:'NH', setName:'護理之家', aim:'dx', target:'護理之家肺炎（NHAP）',
+     algo:'邏輯斯迴歸（諾莫圖）', algoWhy:'把迴歸係數畫成一張可以手動對照的計分圖，臨床可直接使用。',
+     modal:'單模態', data:'結構化電子病歷', auc:0.958, metric:'AUC 0.958', ml:false,
+     note:'全篇最高分，用的卻是最傳統的方法。與 Ramazi 2022 並列，正好支持「複雜不等於更好」的論點。'},
+    {id:'garces21', ref:49, title:'Medical prognosis of infectious diseases in nursing homes by applying machine learning on clinical data collected in cloud microservices', who:'Garcés 2021', set:'NH', setName:'護理之家', aim:'dx', target:'呼吸道、泌尿道與傷口感染',
+     algo:'k-最近鄰 ＋ 隨機森林', algoWhy:'先找狀況最相似的個案，再用多棵樹投票表決。',
+     modal:'多模態', data:'雲端微服務彙整的臨床數據', auc:null, metric:'Accuracy 1.00', ml:true,
+     note:'報告的是準確率而非 AUC，指標不同不可與其他研究並列比較。準確率 1.00 在臨床資料上極為罕見，要特別留意樣本與驗證方式。'},
+    {id:'lee21', ref:35, title:'Predictors of mortality among long-term care residents with SARS-CoV-2 infection', who:'Lee 2021', set:'LTC', setName:'長期照護', aim:'px', target:'COVID-19 感染後 30 天死亡率',
+     algo:'隨機存活森林', algoWhy:'存活分析版的隨機森林，能同時處理「會不會發生」與「多久之後發生」。',
+     modal:'單模態', data:'結構化電子病歷（interRAI 評估）', auc:0.701, metric:'AUC 0.701', ml:true,
+     note:'預後型模型的下限。預測死亡本來就受太多模型看不到的因素影響，分數偏低是常態。'},
+    {id:'song21', ref:57, title:'Predictive risk models for wound infection-related hospitalization or ED visits in home health care using machine-learning algorithms', who:'Song 2021', set:'HHC', setName:'居家照護', aim:'dx', target:'傷口感染與相關住院／急診',
+     algo:'邏輯斯迴歸、隨機森林、神經網路', algoWhy:'同時比較傳統與進階方法，是本綜述中少數做橫向比較的研究。',
+     modal:'多模態', data:'結構化電子病歷 ＋ 臨床文字紀錄', auc:0.818, metric:'AUC 0.818（F1 0.88）', ml:true,
+     note:'唯一的傷口感染模型。把護理紀錄的自由文字納入，對長照場域特別有參考價值。'},
+    {id:'pana21', ref:52, title:'Risk factors associated with all-cause 30-day mortality in nursing home residents with COVID-19', who:'Panagiotou 2021', set:'NH', setName:'護理之家', aim:'px', target:'COVID-19 感染後 30 天死亡率',
+     algo:'邏輯斯迴歸、線性混合效應模型', algoWhy:'混合效應模型用來吸收不同機構之間的差異。',
+     modal:'單模態', data:'結構化電子病歷（MDS 評估）', auc:0.74, metric:'AUC 0.74', ml:false,
+     note:'中等程度的死亡風險區分能力，屬於預後型模型的典型水準。'},
+    {id:'shang20', ref:56, title:'A predictive risk model for infection-related hospitalization among home healthcare patients', who:'Shang 2020', set:'HHC', setName:'居家照護', aim:'px', target:'不限類型感染的住院／急診',
+     algo:'邏輯斯迴歸', algoWhy:'固定權重的計分模型，最容易轉成臨床可用的風險評估表。',
+     modal:'單模態', data:'結構化電子病歷（OASIS 評估）', auc:0.7162, metric:'C-statistic 0.7162', ml:false,
+     note:'證明只用既有的例行評估資料就能建出可用模型——這對人力有限的機構是務實的訊息。'},
+    {id:'bald20', ref:48, title:'Infection prediction using physiological and social data in social environments', who:'Baldominos 2020', set:'NH', setName:'護理之家', aim:'dx', target:'不限類型之綜合感染偵測',
+     algo:'k-最近鄰 ＋ 主成分分析', algoWhy:'先用 PCA 把大量變項壓縮成少數綜合指標，再找相似個案。',
+     modal:'多模態', data:'生理訊號 ＋ 社交與病歷資料', auc:0.798, metric:'AUC 0.798（敏感度 0.723）', ml:true,
+     note:'少數納入社交互動資料的研究，稍微碰到了個人層次以外的因子。'},
+    {id:'rauh19', ref:53, title:'Predicting mortality in nursing home residents with dementia and pneumonia treated with antibiotics: validation of a prediction model in a more recent population', who:'Rauh 2019', set:'NH', setName:'護理之家（失智症）', aim:'px', target:'肺炎治療後 14 天死亡率',
+     algo:'邏輯斯迴歸', algoWhy:'固定權重的機率模型。',
+     modal:'單模態', data:'結構化電子病歷', auc:0.80, metric:'AUC 0.80', ml:false,
+     note:'預後型的上限。傳統模型在死亡預測上仍有不錯的區分能力。'},
+    {id:'steen06', ref:54, title:'Predictors of mortality for lower respiratory infections in nursing home residents with dementia were validated transnationally', who:'Steen 2006', set:'NH', setName:'護理之家（失智症）', aim:'px', target:'下呼吸道感染死亡率',
+     algo:'邏輯斯迴歸', algoWhy:'固定權重的機率模型。',
+     modal:'單模態', data:'結構化電子病歷（MDS 評估）', auc:0.74, metric:'C-statistic 0.74', ml:false,
+     note:'早期研究。能被納入是因為本綜述不限出版年，也因此看得出領域的演變。'},
+    {id:'mehr01', ref:50, title:'Predicting mortality in nursing home residents with lower respiratory tract infection: the Missouri LRI study', who:'Mehr 2001', set:'NH', setName:'護理之家', aim:'px', target:'下呼吸道感染 30 天死亡率',
+     algo:'邏輯斯迴歸、GEE', algoWhy:'GEE 用來校正同一住民重複發生事件造成的偏差。',
+     modal:'單模態', data:'結構化電子病歷（MDS 評估）', auc:0.76, metric:'C-statistic 0.76', ml:false,
+     note:'少數處理了重複測量問題的研究之一，這正是多數研究被判高偏差風險的地方。'},
+    {id:'naug00', ref:51, title:'Outcome of nursing home-acquired pneumonia: derivation and application of a practical model to predict 30 day mortality', who:'Naughton 2000', set:'NH', setName:'護理之家', aim:'px', target:'NHAP 30 天死亡率',
+     algo:'邏輯斯迴歸', algoWhy:'固定權重的機率模型。',
+     modal:'單模態', data:'結構化電子病歷', auc:0.74, metric:'AUC 0.74', ml:false,
+     note:'本綜述中最早的一篇，二十多年前的模型與 2021 年的模型分數相近，本身就很說明問題。'}
+  ];
+
+  var rowsEl = document.getElementById('rows');
+  var panelEl = document.getElementById('panel');
+  var activeFilter = 'all';
+  var activeId = null;
+
+  function matches(s){
+    if(activeFilter === 'all') return true;
+    if(activeFilter === 'NH' || activeFilter === 'LTC' || activeFilter === 'HHC') return s.set === activeFilter;
+    if(activeFilter === 'dx' || activeFilter === 'px') return s.aim === activeFilter;
+    if(activeFilter === 'multi') return s.modal === '多模態';
+    if(activeFilter === 'ml') return s.ml === true;
+    return true;
+  }
+
+  function render(){
+    rowsEl.innerHTML = '';
+    var shown = studies.filter(matches);
+    shown.forEach(function(s){
+      var b = document.createElement('button');
+      b.className = 'row';
+      b.setAttribute('aria-pressed', s.id === activeId ? 'true' : 'false');
+      var left = document.createElement('span');
+      var who = document.createElement('span');
+      who.className = 'who'; who.textContent = s.who;
+      var where = document.createElement('span');
+      where.className = 'where';
+      where.textContent = s.setName + '｜' + (s.aim === 'dx' ? '診斷型' : '預後型') + '｜' + s.modal;
+      left.appendChild(who); left.appendChild(where);
+      var bar = document.createElement('span');
+      bar.className = 'bar';
+      var track = document.createElement('span'); track.className = 'track';
+      var fill = document.createElement('i'); fill.className = 'fill';
+      var pct = s.auc ? Math.max(0, (s.auc - 0.5) / 0.5) * 100 : 100;
+      fill.style.width = pct.toFixed(0) + '%';
+      fill.style.display = 'block';
+      if(!s.auc) fill.style.background = 'var(--muted)';
+      track.appendChild(fill);
+      var val = document.createElement('span');
+      val.className = 'val';
+      val.textContent = s.auc ? s.auc.toFixed(3).replace(/0$/,'') : 'Acc 1.00';
+      bar.appendChild(track); bar.appendChild(val);
+      b.appendChild(left); b.appendChild(bar);
+      b.addEventListener('click', function(){ activeId = s.id; render(); showPanel(s); });
+      rowsEl.appendChild(b);
+    });
+    if(!shown.length){
+      var p = document.createElement('p');
+      p.style.color = 'var(--muted)';
+      p.textContent = '這個條件下沒有研究——這本身就是證據缺口。';
+      rowsEl.appendChild(p);
+    }
+  }
+
+  function aucSentence(s){
+    if(!s.auc) return '這篇報告的是準確率而不是 AUC，兩者衡量的東西不同，不能和其他研究並列比較。';
+    var pct = Math.round(s.auc * 100);
+    return '隨機抽一位後來感染的住民和一位沒感染的住民，這個模型把感染那位排在前面的機率約 ' + pct + '%。';
+  }
+
+  function showPanel(s){
+    panelEl.innerHTML = '';
+    var h = document.createElement('h3'); h.textContent = s.who;
+    var sub = document.createElement('p'); sub.className = 'sub'; sub.textContent = s.setName + '　｜　原文參考文獻 ' + s.ref;
+    var ft = document.createElement('p'); ft.className = 'fulltitle'; ft.textContent = s.title;
+    var tags = document.createElement('div'); tags.className = 'tagrow';
+    [(s.aim === 'dx' ? '診斷型' : '預後型'), s.modal, (s.ml ? '進階 ML' : '傳統迴歸')].forEach(function(t, i){
+      var e = document.createElement('span');
+      e.className = 'tag' + (i === 1 && s.modal === '多模態' ? ' multi' : '');
+      e.textContent = t; tags.appendChild(e);
+    });
+    var dl = document.createElement('dl'); dl.className = 'kv';
+    [['預測目標', s.target], ['演算法', s.algo], ['資料模態', s.data], ['最佳表現', s.metric]].forEach(function(pair){
+      var dt = document.createElement('dt'); dt.textContent = pair[0];
+      var dd = document.createElement('dd'); dd.textContent = pair[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    var why = document.createElement('p');
+    why.style.cssText = 'font-size:.92rem;color:var(--ink-soft);margin:0 0 12px';
+    why.textContent = '這個演算法在做什麼：' + s.algoWhy;
+    var ex = document.createElement('p'); ex.className = 'explain';
+    ex.innerHTML = '<b>這個數字的意思</b><br>';
+    ex.appendChild(document.createTextNode(aucSentence(s)));
+    var note = document.createElement('p');
+    note.style.cssText = 'font-size:.9rem;color:var(--ink-soft);margin:14px 0 0';
+    note.textContent = s.note;
+    [h, sub, ft, tags, dl, why, ex, note].forEach(function(n){ panelEl.appendChild(n); });
+  }
+
+  function emptyPanel(){
+    panelEl.innerHTML = '';
+    var h = document.createElement('h3'); h.textContent = '點左邊任一篇';
+    var p = document.createElement('p');
+    p.style.cssText = 'font-size:.93rem;color:var(--ink-soft);margin:8px 0 0';
+    p.textContent = '會顯示它的預測目標、演算法在做什麼、用了哪些資料，以及那個效能數字的白話解讀。橫條長度為 AUC 從 0.5 到 1.0 的相對位置。';
+    panelEl.appendChild(h); panelEl.appendChild(p);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('#filters .chip'), function(c){
+    c.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('#filters .chip'), function(o){ o.setAttribute('aria-pressed','false'); });
+      c.setAttribute('aria-pressed','true');
+      activeFilter = c.dataset.f;
+      render();
+    });
+  });
+  render(); emptyPanel();
+
+  /* ---------- AUC visual ---------- */
+  function erf(x){
+    var s = x < 0 ? -1 : 1; x = Math.abs(x);
+    var a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    var t = 1/(1+p*x);
+    var y = 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*Math.exp(-x*x);
+    return s*y;
+  }
+  function ncdf(x){ return 0.5*(1+erf(x/Math.SQRT2)); }
+  function nquantile(p){
+    var lo = -6, hi = 6;
+    for(var i=0;i<80;i++){ var mid=(lo+hi)/2; if(ncdf(mid) < p) lo = mid; else hi = mid; }
+    return (lo+hi)/2;
+  }
+  var W = 600, H = 210, PAD = 34;
+  function gpath(mean, sd, xmin, xmax, peak){
+    var pts = [], n = 120;
+    for(var i=0;i<=n;i++){
+      var xu = xmin + (xmax - xmin)*i/n;
+      var y = Math.exp(-0.5*Math.pow((xu-mean)/sd,2));
+      var px = PAD + (xu - xmin)/(xmax - xmin)*(W - PAD*2);
+      var py = H - 30 - y*peak;
+      pts.push((i===0?'M':'L') + px.toFixed(1) + ' ' + py.toFixed(1));
+    }
+    pts.push('L' + (PAD + (xmax-xmin>0 ? (xmax-xmin)/(xmax-xmin) : 1)*(W-PAD*2)).toFixed(1) + ' ' + (H-30));
+    pts.push('L' + PAD + ' ' + (H-30) + ' Z');
+    return pts.join(' ');
+  }
+  function drawDist(){
+    var g = document.getElementById('distg');
+    if(!g) return;
+    var auc = parseInt(document.getElementById('aucslider').value, 10)/100;
+    var d = Math.SQRT2 * nquantile(auc);
+    var xmin = -3.4, xmax = 3.4 + d;
+    var blue = token('--blue'), flag = token('--flag'), muted = token('--muted'), rule = token('--rule');
+    var peak = 120;
+    var thresh = d/2;
+    var tx = PAD + (thresh - xmin)/(xmax - xmin)*(W - PAD*2);
+    var svg = '';
+    svg += '<line x1="'+PAD+'" y1="'+(H-30)+'" x2="'+(W-PAD)+'" y2="'+(H-30)+'" stroke="'+rule+'" stroke-width="1"/>';
+    svg += '<path d="'+gpath(0,1,xmin,xmax,peak)+'" fill="'+blue+'" fill-opacity="0.22" stroke="'+blue+'" stroke-width="1.5"/>';
+    svg += '<path d="'+gpath(d,1,xmin,xmax,peak)+'" fill="'+flag+'" fill-opacity="0.22" stroke="'+flag+'" stroke-width="1.5"/>';
+    svg += '<line x1="'+tx.toFixed(1)+'" y1="18" x2="'+tx.toFixed(1)+'" y2="'+(H-30)+'" stroke="'+muted+'" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    svg += '<text x="'+tx.toFixed(1)+'" y="12" fill="'+muted+'" font-size="11" text-anchor="middle">分界點</text>';
+    svg += '<text x="'+PAD+'" y="'+(H-10)+'" fill="'+muted+'" font-size="11">風險分數低</text>';
+    svg += '<text x="'+(W-PAD)+'" y="'+(H-10)+'" fill="'+muted+'" font-size="11" text-anchor="end">風險分數高</text>';
+    g.innerHTML = svg;
+
+    document.getElementById('aucval').childNodes[0].nodeValue = auc.toFixed(2) + ' ';
+    var pct = Math.round(auc*100);
+    var say;
+    if(auc < 0.6) say = '幾乎分不出來。兩群幾乎完全重疊，等於丟銅板。';
+    else if(auc < 0.75) say = '勉強有辨別力。每 10 對住民約有 3 對會被排錯。';
+    else if(auc < 0.85) say = '臨床預測模型常見的水準，還原得出高低風險，但誤判仍不少。';
+    else if(auc < 0.93) say = '區分度相當好，重疊的部分明顯縮小。';
+    else say = '非常高。此時要反問：是不是結果太好認、或訓練資料洩漏了答案。';
+    document.getElementById('aucsay').textContent = '隨機一對住民中排序正確的機率約 ' + pct + '%。' + say;
+    var sv = ncdf(d/2);
+    document.getElementById('sens').textContent = sv.toFixed(3);
+    document.getElementById('spec').textContent = sv.toFixed(3);
+  }
+  document.getElementById('aucslider').addEventListener('input', drawDist);
+  Array.prototype.forEach.call(document.querySelectorAll('#presets .chip'), function(c){
+    c.addEventListener('click', function(){
+      document.getElementById('aucslider').value = c.dataset.auc;
+      drawDist();
+    });
+  });
+  drawDist();
+
+  /* ---------- calibration ---------- */
+  var calMode = 'bad';
+  function drawCal(){
+    var svg = document.getElementById('calsvg');
+    if(!svg) return;
+    var w = 320, h = 240, p = 34;
+    var rule = token('--rule'), muted = token('--muted'), trace = token('--trace'), flag = token('--flag');
+    function X(v){ return p + v*(w - p - 14); }
+    function Y(v){ return h - p - v*(h - p - 18); }
+    var s = '';
+    s += '<line x1="'+p+'" y1="'+(h-p)+'" x2="'+(w-14)+'" y2="'+(h-p)+'" stroke="'+rule+'"/>';
+    s += '<line x1="'+p+'" y1="'+(h-p)+'" x2="'+p+'" y2="18" stroke="'+rule+'"/>';
+    s += '<line x1="'+X(0)+'" y1="'+Y(0)+'" x2="'+X(1)+'" y2="'+Y(1)+'" stroke="'+muted+'" stroke-dasharray="4 4"/>';
+    var pts = [];
+    for(var i=0;i<=10;i++){
+      var x = i/10;
+      var y = calMode === 'good' ? Math.min(1, Math.max(0, x + (i%3===0?0.02:-0.015))) : Math.pow(x, 1.9)*0.82 + 0.02;
+      pts.push((i===0?'M':'L') + X(x).toFixed(1) + ' ' + Y(y).toFixed(1));
+    }
+    var color = calMode === 'good' ? trace : flag;
+    s += '<path d="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2.5"/>';
+    for(var k=0;k<=10;k+=2){
+      var xx = k/10;
+      var yy = calMode === 'good' ? Math.min(1, xx + (k%3===0?0.02:-0.015)) : Math.pow(xx,1.9)*0.82+0.02;
+      s += '<circle cx="'+X(xx).toFixed(1)+'" cy="'+Y(yy).toFixed(1)+'" r="3.5" fill="'+color+'"/>';
+    }
+    s += '<text x="'+(w/2)+'" y="'+(h-8)+'" fill="'+muted+'" font-size="11" text-anchor="middle">模型預測的風險</text>';
+    s += '<text x="14" y="16" fill="'+muted+'" font-size="11">實際發生率</text>';
+    if(calMode === 'bad'){
+      s += '<text x="'+X(0.55)+'" y="'+Y(0.72)+'" fill="'+flag+'" font-size="11">說 70%，實際只有 30%</text>';
+    }
+    svg.innerHTML = s;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cal]'), function(c){
+    c.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('[data-cal]'), function(o){ o.setAttribute('aria-pressed','false'); });
+      c.setAttribute('aria-pressed','true');
+      calMode = c.dataset.cal;
+      drawCal();
+    });
+  });
+  drawCal();
+
+  /* ---------- probast dots ---------- */
+  function dots(el, ok){
+    var host = document.getElementById(el);
+    if(!host) return;
+    for(var i=1;i<=13;i++){
+      var d = document.createElement('span');
+      d.className = 'dot' + (ok ? ' ok' : '');
+      d.textContent = i;
+      d.title = '第 ' + i + ' 篇';
+      host.appendChild(d);
+    }
+  }
+  dots('dotsApp', true);
+  dots('dotsRob', false);
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tk(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
+function el(tag, cls, txt){ var e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; }
+function svgEl(vb, h){
+  var s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  s.setAttribute('viewBox', vb); s.setAttribute('role','img');
+  if(h) s.setAttribute('aria-label', h);
+  return s;
+}
+
+/* 共用的示範住民：體溫、血氧、ADL 下降幅度、食慾 */
+var R = [
+  {n:'A 阿嬤', t:38.2, o:92, adl:3, eat:1, y:1},
+  {n:'B 阿公', t:37.6, o:95, adl:2, eat:1, y:1},
+  {n:'C 阿姨', t:36.8, o:97, adl:0, eat:0, y:0},
+  {n:'D 伯伯', t:37.1, o:94, adl:2, eat:1, y:1},
+  {n:'E 奶奶', t:36.6, o:98, adl:0, eat:0, y:0},
+  {n:'F 先生', t:37.9, o:93, adl:1, eat:0, y:1},
+  {n:'G 女士', t:36.9, o:96, adl:1, eat:0, y:0}
+];
+
+var stage = document.getElementById('stagebody');
+var ctl = document.getElementById('stagectl');
+var stageTitle = document.getElementById('stagetitle');
+
+function clear(){ stage.innerHTML=''; ctl.innerHTML=''; }
+function whoPicker(idx, cb){
+  var wrap = el('div','who-pick');
+  R.forEach(function(r,i){
+    var b = el('button', null, r.n);
+    b.setAttribute('aria-pressed', i===idx ? 'true':'false');
+    b.addEventListener('click', function(){ cb(i); });
+    wrap.appendChild(b);
+  });
+  var lab = el('label'); lab.appendChild(el('span',null,'選一位住民')); lab.appendChild(wrap);
+  ctl.appendChild(lab);
+}
+function slider(labelText, min, max, val, step, cb){
+  var lab = el('label');
+  lab.appendChild(el('span', null, labelText));
+  var i = document.createElement('input');
+  i.type='range'; i.min=min; i.max=max; i.value=val; i.step=step;
+  var out = el('b', null, val);
+  out.style.cssText='font-variant-numeric:tabular-nums;color:var(--ink)';
+  i.addEventListener('input', function(){ out.textContent = i.value; cb(parseFloat(i.value)); });
+  lab.appendChild(i); lab.appendChild(out);
+  ctl.appendChild(lab);
+  return i;
+}
+function button(text, cb, ghost){
+  var b = el('button','btn' + (ghost?' ghost':''), text);
+  b.addEventListener('click', cb);
+  ctl.appendChild(b);
+  return b;
+}
+
+/* ---------------- 1. 邏輯斯迴歸 ---------------- */
+function demoLR(){
+  stageTitle.textContent = '調整每個因子的權重，看風險分數怎麼算出來';
+  var w = {t:1.4, o:1.0, adl:0.8}, idx = 0;
+  var box = el('div'); stage.appendChild(box);
+  function draw(){
+    var r = R[idx];
+    var ft = Math.max(0, r.t - 36.8) * 2.2, fo = Math.max(0, 96 - r.o) * 0.5, fa = r.adl * 0.5;
+    var parts = [
+      {k:'體溫 ' + r.t + '°C', v: ft * w.t, c: tk('--flag')},
+      {k:'血氧 ' + r.o + '%', v: fo * w.o, c: tk('--blue')},
+      {k:'ADL 下降 ' + r.adl + ' 級', v: fa * w.adl, c: tk('--trace')}
+    ];
+    var z = parts.reduce(function(a,p){return a+p.v;}, 0) - 2.2;
+    var prob = 1/(1+Math.exp(-z));
+    var total = parts.reduce(function(a,p){return a+Math.abs(p.v);},0) || 1;
+    box.innerHTML = '';
+    var bar = el('div'); bar.style.cssText='display:flex;height:34px;border-radius:6px;overflow:hidden;border:1px solid var(--rule)';
+    parts.forEach(function(p){
+      var s = el('div'); s.style.cssText='background:'+p.c+';opacity:.75;width:'+(Math.abs(p.v)/total*100)+'%';
+      bar.appendChild(s);
+    });
+    box.appendChild(bar);
+    var leg = el('div'); leg.style.cssText='display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:.85rem;color:var(--ink-soft)';
+    parts.forEach(function(p){
+      var s = el('span');
+      s.innerHTML = '<i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:'+p.c+';margin-right:6px"></i>';
+      s.appendChild(document.createTextNode(p.k + ' → ' + p.v.toFixed(2) + ' 分'));
+      leg.appendChild(s);
+    });
+    box.appendChild(leg);
+    var line = el('div','readline');
+    var big = el('span','big', (prob*100).toFixed(0) + '%');
+    var cap = el('span','cap', '模型預測' + R[idx].n + '感染的機率（實際上' + (R[idx].y ? '有' : '沒有') + '感染）');
+    line.appendChild(big); line.appendChild(cap);
+    box.appendChild(line);
+    var hint = el('p','note-inline','把三個權重都拉到 0，機率就固定在基準值——這說明每個因子各自貢獻多少，是看得見的。臨床風險量表就是這樣做出來的。');
+    box.appendChild(hint);
+  }
+  whoPicker(idx, function(i){ idx=i; ctl.innerHTML=''; buildCtl(); draw(); });
+  function buildCtl(){
+    whoPickerRebuild();
+    slider('體溫權重', 0, 2, w.t, 0.1, function(v){ w.t=v; draw(); });
+    slider('血氧權重', 0, 2, w.o, 0.1, function(v){ w.o=v; draw(); });
+    slider('ADL 權重', 0, 2, w.adl, 0.1, function(v){ w.adl=v; draw(); });
+  }
+  function whoPickerRebuild(){ whoPicker(idx, function(i){ idx=i; ctl.innerHTML=''; buildCtl(); draw(); }); }
+  ctl.innerHTML=''; buildCtl(); draw();
+}
+
+/* ---------------- 2. 決策樹 ---------------- */
+function demoTree(){
+  stageTitle.textContent = '選一位住民，看他一路走進哪一個風險組';
+  var idx = 0;
+  var s = svgEl('0 0 520 280','決策樹分流圖');
+  stage.appendChild(s);
+  var nodes = {
+    root:{x:260,y:28,w:150,txt:'體溫 ≥ 37.5°C ?'},
+    l1:{x:130,y:110,w:150,txt:'血氧 < 94% ?'},
+    r1:{x:390,y:110,w:150,txt:'食慾變差 ?'},
+    ll:{x:60,y:200,w:100,txt:'高風險'},
+    lr:{x:200,y:200,w:100,txt:'中風險'},
+    rl:{x:330,y:200,w:100,txt:'中風險'},
+    rr:{x:460,y:200,w:100,txt:'低風險'}
+  };
+  function path(r){
+    var p = ['root'];
+    if(r.t >= 37.5){ p.push('l1'); p.push(r.o < 94 ? 'll' : 'lr'); }
+    else { p.push('r1'); p.push(r.eat ? 'rl' : 'rr'); }
+    return p;
+  }
+  function draw(active){
+    var rule=tk('--rule'), ink=tk('--ink'), card=tk('--card'), trace=tk('--trace'), muted=tk('--muted');
+    var out = '';
+    function edge(a,b,lbl){
+      var A=nodes[a], B=nodes[b];
+      var on = active.indexOf(a)>-1 && active.indexOf(b)>-1;
+      out += '<path d="M'+A.x+' '+(A.y+18)+' L'+A.x+' '+(A.y+40)+' L'+B.x+' '+(A.y+40)+' L'+B.x+' '+(B.y-18)+'" fill="none" stroke="'+(on?trace:rule)+'" stroke-width="'+(on?2.5:1.3)+'"/>';
+      out += '<text x="'+((A.x+B.x)/2)+'" y="'+(A.y+36)+'" fill="'+(on?trace:muted)+'" font-size="11" text-anchor="middle">'+lbl+'</text>';
+    }
+    edge('root','l1','是'); edge('root','r1','否');
+    edge('l1','ll','是'); edge('l1','lr','否');
+    edge('r1','rl','是'); edge('r1','rr','否');
+    Object.keys(nodes).forEach(function(k){
+      var n = nodes[k], on = active.indexOf(k)>-1, leaf = k.length===2;
+      out += '<rect x="'+(n.x-n.w/2)+'" y="'+(n.y-18)+'" width="'+n.w+'" height="36" rx="6" fill="'+(on?tk('--trace-soft'):card)+'" stroke="'+(on?trace:rule)+'" stroke-width="'+(on?2:1)+'"/>';
+      out += '<text x="'+n.x+'" y="'+(n.y+5)+'" fill="'+(on?trace:(leaf?ink:ink))+'" font-size="13" text-anchor="middle">'+n.txt+'</text>';
+    });
+    s.innerHTML = out;
+  }
+  function run(){
+    var p = path(R[idx]);
+    if(RM){ draw(p); return; }
+    draw([]);
+    p.forEach(function(k,i){ setTimeout(function(){ draw(p.slice(0,i+1)); }, i*420); });
+  }
+  ctl.innerHTML='';
+  whoPicker(idx, function pick(i){ idx=i; ctl.innerHTML=''; whoPicker(idx, pick); run(); });
+  run();
+  var tip = el('p','note-inline','每一層只問一個問題，走到底就分好組。看得懂、好交班，但只靠一棵樹很容易把訓練資料裡的巧合當成規則。');
+  stage.appendChild(tip);
+}
+
+/* ---------------- 3. 隨機森林 ---------------- */
+function demoForest(){
+  stageTitle.textContent = '五棵樹各自判斷，再投票表決';
+  var idx = 0, seed = 1;
+  var box = el('div'); stage.appendChild(box);
+  function rnd(){ seed = (seed*9301 + 49297) % 233280; return seed/233280; }
+  function draw(){
+    var r = R[idx];
+    seed = 7;
+    var trees = [];
+    for(var i=0;i<5;i++){
+      var useT = rnd() > 0.25, useO = rnd() > 0.35, useA = rnd() > 0.4;
+      if(!useT && !useO && !useA) useT = true;
+      var score = 0;
+      if(useT) score += (r.t >= 37.4 + (rnd()-0.5)*0.4) ? 1 : 0;
+      if(useO) score += (r.o <= 94 + (rnd()-0.5)*2) ? 1 : 0;
+      if(useA) score += (r.adl >= 2) ? 1 : 0;
+      var n = (useT?1:0)+(useO?1:0)+(useA?1:0);
+      trees.push({hi: score/n >= 0.5, feats:[useT?'體溫':null, useO?'血氧':null, useA?'ADL':null].filter(Boolean)});
+    }
+    box.innerHTML='';
+    var row = el('div','votes');
+    trees.forEach(function(t,i){
+      var v = el('div','vote ' + (t.hi ? 'hi':'lo'));
+      v.appendChild(document.createTextNode('第 ' + (i+1) + ' 棵'));
+      v.appendChild(el('b', null, t.hi ? '高風險':'低風險'));
+      v.appendChild(el('span', null, t.feats.join('・')));
+      v.lastChild.style.cssText='display:block;font-size:.7rem;margin-top:4px';
+      row.appendChild(v);
+    });
+    box.appendChild(row);
+    var hi = trees.filter(function(t){return t.hi;}).length;
+    var line = el('div','readline');
+    line.appendChild(el('span','big', hi + ' : ' + (5-hi)));
+    line.appendChild(el('span','cap', '多數決結果為' + (hi>=3 ? '高風險' : '低風險') + '（' + R[idx].n + '實際' + (R[idx].y ? '有':'沒有') + '感染）'));
+    box.appendChild(line);
+    box.appendChild(el('p','note-inline','每棵樹只看到部分資料與部分因子，所以判斷不一致很正常。森林要的不是每棵都對，而是錯的方向彼此抵消。'));
+  }
+  ctl.innerHTML='';
+  whoPicker(idx, function pick(i){ idx=i; ctl.innerHTML=''; whoPicker(idx, pick); button('重新抽樣建林', function(){ seed=Math.floor(Math.random()*999); draw(); }); draw(); });
+  button('重新抽樣建林', function(){ seed=Math.floor(Math.random()*999); draw(); });
+  draw();
+}
+
+/* ---------------- 4. XGBoost ---------------- */
+function demoXGB(){
+  stageTitle.textContent = '一輪一輪修正上一輪猜錯的地方';
+  var round = 0;
+  var pred = R.map(function(){ return 0.5; });
+  var s = svgEl('0 0 520 250','每輪預測與實際的差距');
+  stage.appendChild(s);
+  var cap = el('p','note-inline'); stage.appendChild(cap);
+  function draw(){
+    var rule=tk('--rule'), flag=tk('--flag'), trace=tk('--trace'), muted=tk('--muted');
+    var out='', w=58, gap=10, x0=40;
+    R.forEach(function(r,i){
+      var x = x0 + i*(w+gap);
+      var yTrue = 210 - r.y*150;
+      var yPred = 210 - pred[i]*150;
+      out += '<rect x="'+x+'" y="'+yTrue+'" width="'+w+'" height="'+(210-yTrue)+'" fill="'+rule+'" opacity=".55" rx="3"/>';
+      out += '<line x1="'+x+'" y1="'+yPred+'" x2="'+(x+w)+'" y2="'+yPred+'" stroke="'+trace+'" stroke-width="3"/>';
+      var err = Math.abs(r.y - pred[i]);
+      if(err > 0.03){
+        out += '<line x1="'+(x+w/2)+'" y1="'+yPred+'" x2="'+(x+w/2)+'" y2="'+yTrue+'" stroke="'+flag+'" stroke-width="1.5" stroke-dasharray="3 3"/>';
+      }
+      out += '<text x="'+(x+w/2)+'" y="232" fill="'+muted+'" font-size="11" text-anchor="middle">'+r.n.charAt(0)+'</text>';
+    });
+    out += '<text x="'+x0+'" y="20" fill="'+muted+'" font-size="11">灰柱＝實際結果　綠線＝模型預測　紅虛線＝還差多少</text>';
+    s.innerHTML = out;
+    var mae = R.reduce(function(a,r,i){ return a + Math.abs(r.y-pred[i]); },0)/R.length;
+    cap.textContent = '第 ' + round + ' 輪：平均誤差 ' + mae.toFixed(3) + (round===0 ? '。一開始所有人都猜 0.5，等於還沒學到東西。' : (round>=5 ? '。誤差已經很小，但這時要小心：模型可能連資料裡的雜訊都背起來了，換一批人就未必準。' : '。每一輪都往差距的方向修正一部分。'));
+  }
+  ctl.innerHTML='';
+  button('再跑一輪', function(){
+    if(round >= 7) return;
+    round++;
+    pred = pred.map(function(p,i){ return p + (R[i].y - p)*0.55; });
+    draw();
+  });
+  button('重來', function(){ round=0; pred = R.map(function(){return 0.5;}); draw(); }, true);
+  draw();
+}
+
+/* ---------------- 5. k-最近鄰 ---------------- */
+function demoKNN(){
+  stageTitle.textContent = '點圖上任一位置放進新住民，看最像他的幾個人後來怎麼了';
+  var k = 3, nw = null;
+  var s = svgEl('0 0 460 300','體溫與血氧散布圖');
+  s.style.cursor='crosshair';
+  stage.appendChild(s);
+  var out = el('p','note-inline'); stage.appendChild(out);
+  function X(t){ return 50 + (t-36.4)/2.1*370; }
+  function Y(o){ return 250 - (o-91)/8*210; }
+  function draw(){
+    var rule=tk('--rule'), muted=tk('--muted'), flag=tk('--flag'), blue=tk('--blue'), trace=tk('--trace');
+    var o='';
+    o += '<line x1="50" y1="250" x2="440" y2="250" stroke="'+rule+'"/><line x1="50" y1="250" x2="50" y2="26" stroke="'+rule+'"/>';
+    o += '<text x="245" y="278" fill="'+muted+'" font-size="11" text-anchor="middle">體溫 →</text>';
+    o += '<text x="12" y="30" fill="'+muted+'" font-size="11">血氧 ↑</text>';
+    if(nw){
+      var ds = R.map(function(r,i){
+        var dx = (r.t-nw.t)/2.1, dy = (r.o-nw.o)/8;
+        return {i:i, d:Math.sqrt(dx*dx+dy*dy)};
+      }).sort(function(a,b){ return a.d-b.d; }).slice(0,k);
+      ds.forEach(function(p){
+        o += '<line x1="'+X(nw.t)+'" y1="'+Y(nw.o)+'" x2="'+X(R[p.i].t)+'" y2="'+Y(R[p.i].o)+'" stroke="'+trace+'" stroke-width="1.5" stroke-dasharray="4 3"/>';
+      });
+      var hi = ds.filter(function(p){ return R[p.i].y===1; }).length;
+      out.textContent = '最近的 ' + k + " 位裡有 " + hi + ' 位後來感染，因此判定為' + (hi > k/2 ? '高風險' : '低風險') + '。把 k 調大，判斷會變得比較保守、比較不受單一個案影響。';
+    } else {
+      out.textContent = '點一下圖面放進一位新住民。k 是「參考幾位最相似的人」，調整看看結果會不會翻轉。';
+    }
+    R.forEach(function(r){
+      var c = r.y ? flag : blue;
+      o += '<circle cx="'+X(r.t)+'" cy="'+Y(r.o)+'" r="8" fill="'+c+'" fill-opacity=".8"/>';
+      o += '<text x="'+X(r.t)+'" y="'+(Y(r.o)-14)+'" fill="'+muted+'" font-size="10" text-anchor="middle">'+r.n.charAt(0)+'</text>';
+    });
+    if(nw){
+      o += '<circle cx="'+X(nw.t)+'" cy="'+Y(nw.o)+'" r="9" fill="none" stroke="'+trace+'" stroke-width="2.5"/>';
+      o += '<circle cx="'+X(nw.t)+'" cy="'+Y(nw.o)+'" r="3" fill="'+trace+'"/>';
+    }
+    o += '<circle cx="330" cy="26" r="6" fill="'+flag+'" fill-opacity=".8"/><text x="342" y="30" fill="'+muted+'" font-size="11">後來感染</text>';
+    o += '<circle cx="250" cy="26" r="6" fill="'+blue+'" fill-opacity=".8"/><text x="262" y="30" fill="'+muted+'" font-size="11">未感染</text>';
+    s.innerHTML = o;
+  }
+  s.addEventListener('click', function(ev){
+    var box = s.getBoundingClientRect();
+    var px = (ev.clientX - box.left)/box.width*460;
+    var py = (ev.clientY - box.top)/box.height*300;
+    var t = 36.4 + (px-50)/370*2.1, o2 = 91 + (250-py)/210*8;
+    nw = {t: Math.min(38.5, Math.max(36.3, t)), o: Math.min(99, Math.max(90, o2))};
+    draw();
+  });
+  ctl.innerHTML='';
+  slider('k（參考幾位）', 1, 5, 3, 2, function(v){ k=v; draw(); });
+  button('清除', function(){ nw=null; draw(); }, true);
+  draw();
+}
+
+/* ---------------- 6. 神經網路 ---------------- */
+function demoNN(){
+  stageTitle.textContent = '點左邊的因子開關，看訊號怎麼在網路裡流動';
+  var on = [true, true, false, false];
+  var names = ['體溫','血氧','ADL 下降','食慾變差'];
+  var showW = false;
+  var s = svgEl('0 0 520 260','神經網路層狀示意圖');
+  stage.appendChild(s);
+  var out = el('p','note-inline'); stage.appendChild(out);
+  function draw(){
+    var rule=tk('--rule'), muted=tk('--muted'), trace=tk('--trace'), blue=tk('--blue'), card=tk('--card');
+    var L1 = names.map(function(_,i){ return {x:70, y:50+i*55}; });
+    var L2 = [0,1,2,3,4].map(function(i){ return {x:240, y:34+i*48}; });
+    var L3 = [0,1].map(function(i){ return {x:390, y:96+i*68}; });
+    var OUT = {x:480, y:130};
+    var o='';
+    var act2 = L2.map(function(_,j){
+      var v = 0;
+      on.forEach(function(o1,i){ if(o1) v += Math.abs(Math.sin((i+1)*(j+2))); });
+      return Math.min(1, v/2.2);
+    });
+    var act3 = L3.map(function(_,j){
+      var v = act2.reduce(function(a,x,i){ return a + x*Math.abs(Math.cos((i+1)*(j+3))); },0);
+      return Math.min(1, v/3.2);
+    });
+    var res = Math.min(1, (act3[0]*0.6 + act3[1]*0.7));
+    L1.forEach(function(a,i){ L2.forEach(function(b,j){
+      o += '<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="'+(on[i]?trace:rule)+'" stroke-width="'+(on[i]?0.9+act2[j]*1.4:0.5)+'" opacity="'+(on[i]?0.8:0.35)+'"/>';
+    });});
+    L2.forEach(function(a,i){ L3.forEach(function(b,j){
+      o += '<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="'+trace+'" stroke-width="'+(0.5+act2[i]*1.6)+'" opacity="'+(0.25+act2[i]*0.5)+'"/>';
+    });});
+    L3.forEach(function(a,j){
+      o += '<line x1="'+a.x+'" y1="'+a.y+'" x2="'+OUT.x+'" y2="'+OUT.y+'" stroke="'+trace+'" stroke-width="'+(0.8+act3[j]*2)+'" opacity="'+(0.35+act3[j]*0.5)+'"/>';
+    });
+    L1.forEach(function(a,i){
+      o += '<circle cx="'+a.x+'" cy="'+a.y+'" r="15" fill="'+(on[i]?blue:card)+'" stroke="'+(on[i]?blue:rule)+'" stroke-width="1.6"/>';
+      o += '<text x="'+(a.x-26)+'" y="'+(a.y+4)+'" fill="'+muted+'" font-size="11" text-anchor="end">'+names[i]+'</text>';
+    });
+    L2.forEach(function(a,i){
+      o += '<circle cx="'+a.x+'" cy="'+a.y+'" r="12" fill="'+trace+'" fill-opacity="'+(0.15+act2[i]*0.65)+'" stroke="'+trace+'" stroke-width="1.2"/>';
+      if(showW) o += '<text x="'+a.x+'" y="'+(a.y+4)+'" fill="'+muted+'" font-size="9" text-anchor="middle">'+act2[i].toFixed(2)+'</text>';
+    });
+    L3.forEach(function(a,i){
+      o += '<circle cx="'+a.x+'" cy="'+a.y+'" r="12" fill="'+trace+'" fill-opacity="'+(0.15+act3[i]*0.65)+'" stroke="'+trace+'" stroke-width="1.2"/>';
+      if(showW) o += '<text x="'+a.x+'" y="'+(a.y+4)+'" fill="'+muted+'" font-size="9" text-anchor="middle">'+act3[i].toFixed(2)+'</text>';
+    });
+    o += '<circle cx="'+OUT.x+'" cy="'+OUT.y+'" r="17" fill="'+card+'" stroke="'+trace+'" stroke-width="2.5"/>';
+    o += '<text x="'+OUT.x+'" y="'+(OUT.y+5)+'" fill="'+trace+'" font-size="12" text-anchor="middle">'+(res*100).toFixed(0)+'%</text>';
+    o += '<text x="'+OUT.x+'" y="'+(OUT.y+38)+'" fill="'+muted+'" font-size="11" text-anchor="middle">感染風險</text>';
+    s.innerHTML = o;
+    out.textContent = showW
+      ? '這些數字是中間層的活化值。它們沒有臨床意義——你無法說「第 3 個節點代表脫水」，這就是神經網路難以解釋的原因。'
+      : '打開或關掉左邊的因子，輸出就會變。但中間那兩層在做什麼，沒有人能用一句臨床語言說清楚。';
+  }
+  ctl.innerHTML='';
+  var wrap = el('div','who-pick');
+  names.forEach(function(nm,i){
+    var b = el('button', null, nm);
+    b.setAttribute('aria-pressed', on[i]?'true':'false');
+    b.addEventListener('click', function(){ on[i]=!on[i]; b.setAttribute('aria-pressed', on[i]?'true':'false'); draw(); });
+    wrap.appendChild(b);
+  });
+  var lab = el('label'); lab.appendChild(el('span',null,'輸入因子')); lab.appendChild(wrap);
+  ctl.appendChild(lab);
+  button('顯示中間層數值', function(){ showW=!showW; draw(); }, true);
+  draw();
+}
+
+/* ---------------- 7. 隨機存活森林 ---------------- */
+function demoRSF(){
+  stageTitle.textContent = '同樣五位住民，分類模型和存活模型看到的東西不一樣';
+  var mode = 'cls';
+  var people = [
+    {n:'A 阿嬤', d:8, ev:true}, {n:'B 阿公', d:25, ev:true},
+    {n:'C 阿姨', d:30, ev:false}, {n:'D 伯伯', d:14, ev:true}, {n:'E 奶奶', d:19, ev:false}
+  ];
+  var s = svgEl('0 0 520 250','追蹤時間軸');
+  stage.appendChild(s);
+  var out = el('p','note-inline'); stage.appendChild(out);
+  function draw(){
+    var rule=tk('--rule'), muted=tk('--muted'), flag=tk('--flag'), blue=tk('--blue'), trace=tk('--trace');
+    var o='', x0=88, xw=380;
+    o += '<line x1="'+x0+'" y1="216" x2="'+(x0+xw)+'" y2="216" stroke="'+rule+'"/>';
+    [0,10,20,30].forEach(function(d){
+      var x = x0 + d/30*xw;
+      o += '<line x1="'+x+'" y1="212" x2="'+x+'" y2="220" stroke="'+rule+'"/>';
+      o += '<text x="'+x+'" y="236" fill="'+muted+'" font-size="11" text-anchor="middle">第 '+d+' 天</text>';
+    });
+    people.forEach(function(p,i){
+      var y = 30 + i*38;
+      var x = x0 + p.d/30*xw;
+      o += '<text x="'+(x0-10)+'" y="'+(y+4)+'" fill="'+muted+'" font-size="11" text-anchor="end">'+p.n+'</text>';
+      if(mode === 'cls'){
+        var hit = p.ev && p.d <= 30;
+        o += '<rect x="'+x0+'" y="'+(y-9)+'" width="'+xw+'" height="18" rx="4" fill="'+(hit?flag:blue)+'" fill-opacity=".18"/>';
+        o += '<text x="'+(x0+xw/2)+'" y="'+(y+4)+'" fill="'+(hit?flag:blue)+'" font-size="12" text-anchor="middle">'+(hit?'30 天內死亡　1':'30 天內存活　0')+'</text>';
+      } else {
+        o += '<line x1="'+x0+'" y1="'+y+'" x2="'+x+'" y2="'+y+'" stroke="'+trace+'" stroke-width="3"/>';
+        if(p.ev){
+          o += '<circle cx="'+x+'" cy="'+y+'" r="6" fill="'+flag+'"/>';
+          o += '<text x="'+(x+12)+'" y="'+(y+4)+'" fill="'+flag+'" font-size="11">第 '+p.d+' 天死亡</text>';
+        } else {
+          o += '<line x1="'+x+'" y1="'+(y-7)+'" x2="'+x+'" y2="'+(y+7)+'" stroke="'+muted+'" stroke-width="2.5"/>';
+          o += '<text x="'+(x+12)+'" y="'+(y+4)+'" fill="'+muted+'" font-size="11">第 '+p.d+' 天後失去追蹤</text>';
+        }
+      }
+    });
+    s.innerHTML = o;
+    out.textContent = mode === 'cls'
+      ? '分類模型只問「30 天內會不會死」，答案是 0 或 1。C 和 E 中途失去追蹤，卻被當成「沒死」，這會低估風險。'
+      : '存活模型問的是「多久之後發生」。直線長度就是追蹤時間，短直線加一個豎槓代表中途失聯（設限），模型會把「只知道活到第 19 天」這件事正確地用上去。本綜述只有 1 篇這樣做。';
+  }
+  ctl.innerHTML='';
+  var wrap = el('div','who-pick');
+  [['cls','分類模型：會不會'],['srv','存活模型：多久之後']].forEach(function(m){
+    var b = el('button', null, m[1]);
+    b.setAttribute('aria-pressed', mode===m[0]?'true':'false');
+    b.addEventListener('click', function(){
+      mode=m[0];
+      Array.prototype.forEach.call(wrap.children, function(c){ c.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true'); draw();
+    });
+    wrap.appendChild(b);
+  });
+  ctl.appendChild(wrap);
+  draw();
+}
+
+/* ---------------- 8. GEE / 混合效應 ---------------- */
+function demoGEE(){
+  stageTitle.textContent = '9 次感染事件，來自 3 位住民——當成 9 個獨立個案會發生什麼';
+  var mode = 'naive';
+  var s = svgEl('0 0 520 250','重複測量對信賴區間的影響');
+  stage.appendChild(s);
+  var out = el('p','note-inline'); stage.appendChild(out);
+  function draw(){
+    var rule=tk('--rule'), muted=tk('--muted'), flag=tk('--flag'), trace=tk('--trace'), blue=tk('--blue');
+    var o='', x0=60, xw=400;
+    ['甲住民','乙住民','丙住民'].forEach(function(nm,i){
+      var y = 34 + i*34;
+      o += '<text x="'+(x0-12)+'" y="'+(y+4)+'" fill="'+muted+'" font-size="11" text-anchor="end">'+nm+'</text>';
+      for(var j=0;j<3;j++){
+        var x = x0 + 40 + (i*30 + j*90);
+        var c = mode==='naive' ? blue : [trace,flag,blue][i];
+        o += '<circle cx="'+x+'" cy="'+y+'" r="8" fill="'+c+'" fill-opacity=".65"/>';
+        if(mode!=='naive'){
+          o += '<line x1="'+x+'" y1="'+y+'" x2="'+(x+ (j<2?90:0))+'" y2="'+y+'" stroke="'+c+'" stroke-width="1" stroke-dasharray="3 3" opacity=".6"/>';
+        }
+      }
+    });
+    var cy = 176;
+    var half = mode==='naive' ? 38 : 92;
+    o += '<line x1="'+x0+'" y1="'+cy+'" x2="'+(x0+xw)+'" y2="'+cy+'" stroke="'+rule+'"/>';
+    var mid = x0 + xw*0.52;
+    o += '<line x1="'+(mid-half)+'" y1="'+cy+'" x2="'+(mid+half)+'" y2="'+cy+'" stroke="'+(mode==='naive'?flag:trace)+'" stroke-width="4"/>';
+    o += '<circle cx="'+mid+'" cy="'+cy+'" r="6" fill="'+(mode==='naive'?flag:trace)+'"/>';
+    var nullx = x0 + xw*0.30;
+    o += '<line x1="'+nullx+'" y1="'+(cy-30)+'" x2="'+nullx+'" y2="'+(cy+30)+'" stroke="'+muted+'" stroke-dasharray="4 4"/>';
+    o += '<text x="'+nullx+'" y="'+(cy+48)+'" fill="'+muted+'" font-size="11" text-anchor="middle">無效果</text>';
+    o += '<text x="'+x0+'" y="'+(cy-40)+'" fill="'+muted+'" font-size="11">某個危險因子的信賴區間</text>';
+    s.innerHTML = o;
+    out.textContent = mode==='naive'
+      ? '把 9 次事件當成 9 位獨立住民，樣本看起來變多，信賴區間變窄，容易得出「有顯著關聯」的結論——但同一個人的三次感染本來就相似，這是假的資訊量。'
+      : 'GEE 或混合效應模型知道哪幾次來自同一位住民，把重複的部分折抵掉，信賴區間變寬、跨過了無效果線。結論比較保守，但誠實。本綜述只有 16% 的研究處理了這件事。';
+  }
+  ctl.innerHTML='';
+  var wrap = el('div','who-pick');
+  [['naive','當成 9 位獨立住民'],['gee','校正重複測量']].forEach(function(m){
+    var b = el('button', null, m[1]);
+    b.setAttribute('aria-pressed', mode===m[0]?'true':'false');
+    b.addEventListener('click', function(){
+      mode=m[0];
+      Array.prototype.forEach.call(wrap.children, function(c){ c.setAttribute('aria-pressed','false'); });
+      b.setAttribute('aria-pressed','true'); draw();
+    });
+    wrap.appendChild(b);
+  });
+  ctl.appendChild(wrap);
+  draw();
+}
+
+/* ---------------- 9. PCA ---------------- */
+function demoPCA(){
+  stageTitle.textContent = '轉動那條軸，找出最能代表整群資料的方向';
+  var ang = 20;
+  var pts = [];
+  for(var i=0;i<28;i++){
+    var u = (i/27 - 0.5)*2;
+    var noise = Math.sin(i*4.7)*0.28;
+    pts.push({x: u, y: u*0.75 + noise});
+  }
+  var s = svgEl('0 0 460 300','主成分方向示意圖');
+  stage.appendChild(s);
+  var out = el('p','note-inline'); stage.appendChild(out);
+  function draw(){
+    var rule=tk('--rule'), muted=tk('--muted'), blue=tk('--blue'), trace=tk('--trace');
+    var cx=230, cy=150, sc=95;
+    var th = ang*Math.PI/180, ux=Math.cos(th), uy=-Math.sin(th);
+    var proj = pts.map(function(p){ return p.x*ux + p.y*(-uy); });
+    var mean = proj.reduce(function(a,b){return a+b;},0)/proj.length;
+    var varr = proj.reduce(function(a,b){ return a + (b-mean)*(b-mean); },0)/proj.length;
+    var totalVar = pts.reduce(function(a,p){ return a + p.x*p.x + p.y*p.y; },0)/pts.length;
+    var share = Math.min(99, Math.round(varr/totalVar*100));
+    var o='';
+    o += '<line x1="'+(cx-ux*200)+'" y1="'+(cy+uy*200)+'" x2="'+(cx+ux*200)+'" y2="'+(cy-uy*200)+'" stroke="'+trace+'" stroke-width="2.5"/>';
+    pts.forEach(function(p,i){
+      var px = cx + p.x*sc, py = cy - p.y*sc;
+      var t = (p.x*ux + p.y*(-uy));
+      var qx = cx + t*ux*sc, qy = cy - t*(-uy)*sc;
+      o += '<line x1="'+px+'" y1="'+py+'" x2="'+qx+'" y2="'+qy+'" stroke="'+rule+'" stroke-width="1"/>';
+      o += '<circle cx="'+px+'" cy="'+py+'" r="4.5" fill="'+blue+'" fill-opacity=".7"/>';
+      o += '<circle cx="'+qx+'" cy="'+qy+'" r="3" fill="'+trace+'"/>';
+    });
+    o += '<text x="20" y="24" fill="'+muted+'" font-size="11">每個點是一位住民，兩個軸是兩項高度相關的指標</text>';
+    s.innerHTML = o;
+    out.textContent = '這條軸保留了原始變異的約 ' + share + '%。轉到大約 37 度時最高——那個方向就是第一主成分，等於把兩項指標壓縮成一個綜合分數。壓縮後模型變單純，代價是這個新分數沒有直接的臨床名稱。';
+  }
+  ctl.innerHTML='';
+  slider('軸的角度', 0, 179, ang, 1, function(v){ ang=v; draw(); });
+  draw();
+}
+
+/* ---------------- 10. 深度時間聚類 ---------------- */
+function demoDTC(){
+  stageTitle.textContent = '六位住民的兩週活動量，讓模型自己找出型態';
+  var grouped = false;
+  var series = [];
+  var kinds = [0,1,0,1,0,1];
+  for(var i=0;i<6;i++){
+    var arr = [];
+    for(var d=0; d<14; d++){
+      var base = kinds[i]===0 ? 70 - d*3.2 : 68 + Math.sin(d*0.9+i)*6;
+      arr.push(Math.max(8, base + Math.sin(d*1.7+i*2)*5));
+    }
+    series.push(arr);
+  }
+  var wrap = el('div','spark'); stage.appendChild(wrap);
+  var out = el('p','note-inline'); stage.appendChild(out);
+  function draw(){
+    var rule=tk('--rule'), muted=tk('--muted'), flag=tk('--flag'), blue=tk('--blue');
+    wrap.innerHTML='';
+    series.forEach(function(arr,i){
+      var cell = el('div','sparkcell');
+      var col = grouped ? (kinds[i]===0 ? flag : blue) : muted;
+      var pathd = arr.map(function(v,d){
+        var x = 6 + d/13*108, y = 54 - (v/80)*44;
+        return (d===0?'M':'L') + x.toFixed(1) + ' ' + y.toFixed(1);
+      }).join(' ');
+      cell.innerHTML = '<svg viewBox="0 0 120 62"><path d="'+pathd+'" fill="none" stroke="'+col+'" stroke-width="2"/><line x1="6" y1="56" x2="114" y2="56" stroke="'+rule+'"/></svg>';
+      var lab = el('span', null, R[i].n + (grouped ? (kinds[i]===0 ? '　群 A' : '　群 B') : ''));
+      cell.appendChild(lab);
+      if(grouped) lab.style.color = col;
+      wrap.appendChild(cell);
+    });
+    out.textContent = grouped
+      ? '模型自己把六個人分成兩群：群 A 活動量逐日下滑，群 B 起伏但持平。沒有人事先告訴它「下滑」這個概念——它是從波形中找出來的，之後這個群別就能當成一個新的預測因子。'
+      : '每條線是一位住民兩週的活動量。單看數字很難說出誰不一樣，按下按鈕讓模型自己分群。';
+  }
+  ctl.innerHTML='';
+  button('自動分群', function(){ grouped=true; draw(); });
+  button('回到原始資料', function(){ grouped=false; draw(); }, true);
+  draw();
+}
+
+/* ---------------- registry ---------------- */
+var ALGOS = [
+  {k:'lr', name:'邏輯斯迴歸', usage:'69% 的研究使用，是本綜述的主力方法', run:demoLR,
+   what:'每個危險因子有一個固定權重，把分數加起來換算成機率。因為權重看得見，可以直接轉成臨床用的計分表。',
+   clin:'臨床類比：就是你熟悉的跌倒風險量表或壓瘡評估表——勾選項目、加總分數、對照風險等級。',
+   note:'本綜述中分數最高的 Tan 2022（AUC 0.958）用的就是這個方法，做成諾莫圖給臨床對照。'},
+  {k:'tree', name:'CART 決策樹', usage:'樹狀模型合計 38%', run:demoTree,
+   what:'一層一層問是非題，每個答案帶你走進不同分支，最後落在某個風險組。',
+   clin:'臨床類比：一張分流圖或檢傷流程——體溫過高嗎？血氧掉了嗎？一路問到底。',
+   note:'最容易解釋，但單一棵樹很容易把訓練資料裡的巧合當成規則，換一批人就失準。'},
+  {k:'forest', name:'隨機森林', usage:'樹狀模型合計 38%', run:demoForest,
+   what:'建立很多棵樹，每棵只看部分資料與部分因子，最後投票表決。',
+   clin:'臨床類比：找五位護理師各自憑不同線索判斷，再看多數意見。單一判斷可能偏頗，集體投票比較穩。',
+   note:'準確度通常比單棵樹好，但你只看得到票數，看不到一句完整的判斷理由。'},
+  {k:'xgb', name:'XGBoost', usage:'樹狀模型合計 38%；Lee 2022 用它拿到 AUC 0.934', run:demoXGB,
+   what:'一輪一輪地學：先猜一次，把猜錯的案例挑出來重點加強，再猜一次，反覆修正。',
+   clin:'臨床類比：像每月檢討漏掉的個案，針對誤判的類型調整判讀標準，下個月再來一次。',
+   note:'表格型資料上通常表現最好，但輪數太多會把雜訊也背起來，這就是過度配適。'},
+  {k:'knn', name:'k-最近鄰', usage:'少數研究使用（Garcés 2021、Baldominos 2020）', run:demoKNN,
+   what:'它完全不建立規則，也沒有「公式」。做法只有三步：把每位住民依各項數值擺在一張圖上，新來的人也擺進去，然後看離他最近的 k 個人後來怎麼了，多數是什麼結果就判什麼。k 就是「要參考幾個人」。',
+   clin:'臨床類比：交班時說「這個很像上個月三床那位，後來變肺炎」——憑相似個案推斷，就是 k-最近鄰的邏輯。差別只在人腦記得幾個案例，電腦可以同時比對幾千個。',
+   note:'它的成敗完全取決於「像」怎麼定義。如果體溫用度（36–39）、白血球用個數（4000–15000），不先把單位拉到同一個尺度，距離幾乎由白血球決定，體溫等於沒作用。k 太小容易被單一個案帶偏，k 太大則會把不相干的人也算進來。'},
+  {k:'nn', name:'神經網路', usage:'少數研究使用（Song 2021）', run:demoNN,
+   what:'透過多層運算自動找出變項之間的組合關係，適合文字、訊號這類複雜資料。',
+   clin:'臨床類比：像一位經驗豐富卻說不清楚理由的資深同事——判斷常常對，但問他為什麼，只能說「感覺不太對」。',
+   note:'原文指出所有研究都用了可解釋性方法，其中 23% 需要靠 SHAP 這類事後工具才說得出理由。'},
+  {k:'rsf', name:'隨機存活森林', usage:'僅 1 篇使用（Lee 2021）', run:demoRSF,
+   what:'隨機森林的存活分析版本，不只問會不會發生，還問多久之後發生，並能處理中途失去追蹤的個案。',
+   clin:'臨床類比：住民轉院或出院後失聯，你不能當作「沒事」，但也不能丟掉他之前的資料。',
+   note:'長照住民的流動與死亡很常見，這類模型其實最適合這個場域，卻只有一篇使用。'},
+  {k:'gee', name:'GEE 與線性混合效應模型', usage:'各佔 8%，合計 16% 的研究處理了重複測量', run:demoGEE,
+   what:'一般模型假設每一筆資料都來自不同的人。但長照資料不是這樣：30 位住民可能產生 90 次感染事件。若直接當成 90 個獨立個案，樣本看起來膨脹了三倍，信賴區間被壓窄，就容易得出假的顯著結果。這兩種模型就是用來校正這件事。',
+   clin:'臨床類比：問 30 個人意見，每個人講三次，不等於問了 90 個人——因為同一個人的三次回答本來就會很像。同一位住民的三次感染也是同樣的道理。',
+   note:'兩者的分工：GEE 看的是「整群人的平均趨勢」，混合效應模型則額外允許每位住民有自己的起點與變化速度，也能吸收不同機構之間的落差。本綜述只有 16% 的研究做了這件事，而這正是多數研究被判為高偏差風險的原因之一。'},
+  {k:'pca', name:'主成分分析 PCA', usage:'屬於特徵選取，15% 的研究使用非監督式方法', run:demoPCA,
+   what:'當很多變項其實在講同一件事時，PCA 會找出一個「最能代表它們的方向」，把多個欄位合併成一個綜合分數。變項從十幾個降到兩三個，模型變單純，也比較不會過度配適。',
+   clin:'臨床類比：體重、BMI、上臂圍、小腿圍四項其實都在描述「體格」。與其四項都放進模型，不如合成一個體格分數——資訊幾乎沒少，欄位卻少了四分之三。',
+   note:'代價是這個新分數沒有臨床名稱。模型可以說「第一主成分偏低的人風險較高」，卻說不出「因為白蛋白低」。可解釋性換掉了簡潔性，在要跟臨床溝通的場合要特別留意。'},
+  {k:'dtc', name:'深度時間聚類', usage:'屬於特徵選取；Ramazi 2022 用於定位訊號', run:demoDTC,
+   what:'把許多住民連續幾週的數值曲線攤開來，讓電腦自己把「形狀相似」的歸成一群。沒有人事先告訴它什麼叫「逐日下滑」——是它從波形裡自己找出來的。「深度」指的是先用神經網路把一整條曲線壓縮成幾個數字，再拿這幾個數字去分群。',
+   clin:'臨床類比：把幾十位住民兩週的活動量折線圖攤在桌上，不看姓名，只憑曲線形狀分堆。分完才發現某一堆都是後來發燒的人——那個「形狀」就成了新的警訊指標。',
+   note:'它產出的不是預測結果，而是一個新的預測因子（屬於哪一群）。用了它的 Ramazi 2022 最終 AUC 只有 0.69，是本綜述最低——方法新穎不等於預測得準。'}
+];
+
+var picker = document.getElementById('algopicker');
+function select(k){
+  var a = ALGOS.filter(function(x){ return x.k===k; })[0];
+  Array.prototype.forEach.call(picker.children, function(c){
+    c.setAttribute('aria-pressed', c.dataset.k===k ? 'true':'false');
+  });
+  document.getElementById('algoname').textContent = a.name;
+  document.getElementById('algousage').textContent = '本綜述中：' + a.usage;
+  document.getElementById('algowhat').textContent = a.what;
+  document.getElementById('algoclin').textContent = a.clin;
+  document.getElementById('algonote').textContent = a.note;
+  clear();
+  a.run();
+}
+ALGOS.forEach(function(a){
+  var b = el('button','chip', a.name);
+  b.dataset.k = a.k;
+  b.setAttribute('aria-pressed','false');
+  b.addEventListener('click', function(){ select(a.k); });
+  picker.appendChild(b);
+});
+select('lr');
+
+document.getElementById('themebtn').addEventListener('click', function(){
+  var cur = document.querySelector('#algopicker .chip[aria-pressed="true"]');
+  if(cur) setTimeout(function(){ select(cur.dataset.k); }, 30);
+});
+})();
+
+</script>
+<script>
+(function(){
+"use strict";
+function tk(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
+function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+var S = [
+  {n:'Lee 2022',        y:2022, aim:'dx', auc:0.934},
+  {n:'Ramazi 2022',     y:2022, aim:'dx', auc:0.69},
+  {n:'Tan 2022',        y:2022, aim:'dx', auc:0.958},
+  {n:'Garcés 2021',     y:2021, aim:'dx', auc:null},
+  {n:'Song 2021',       y:2021, aim:'dx', auc:0.818},
+  {n:'Lee 2021',        y:2021, aim:'px', auc:0.701},
+  {n:'Panagiotou 2021', y:2021, aim:'px', auc:0.74},
+  {n:'Baldominos 2020', y:2020, aim:'dx', auc:0.798},
+  {n:'Shang 2020',      y:2020, aim:'px', auc:0.7162},
+  {n:'Rauh 2019',       y:2019, aim:'px', auc:0.80},
+  {n:'Steen 2006',      y:2006, aim:'px', auc:0.74},
+  {n:'Mehr 2001',       y:2001, aim:'px', auc:0.76},
+  {n:'Naughton 2000',   y:2000, aim:'px', auc:0.74}
+];
+
+/* ---------- 1. timeline ---------- */
+function drawTimeline(){
+  var svg = document.getElementById('timeline');
+  if(!svg) return;
+  var W=760, pad=58, topM=40, laneH=26, gapAxis=30;
+  var rule=tk('--rule'), muted=tk('--muted'), trace=tk('--trace'), blue=tk('--blue'), card=tk('--card');
+  function X(y){ return pad + (y-2000)/22*(W-pad-70); }
+  function place(items){
+    var lanes = [];
+    items.forEach(function(it){
+      var x = X(it.y);
+      var left = x > W*0.55;
+      var w = it.n.length*6.6 + 24;
+      var span = left ? [x-w, x+12] : [x-12, x+w];
+      var lane = 0;
+      for(;;){
+        var occ = lanes[lane] || (lanes[lane] = []);
+        var clash = false;
+        for(var i=0;i<occ.length;i++){
+          if(!(span[1] < occ[i][0]-10 || span[0] > occ[i][1]+10)){ clash = true; break; }
+        }
+        if(!clash){ occ.push(span); break; }
+        lane++;
+      }
+      it._lane = lane; it._left = left; it._x = x;
+    });
+    return lanes.length;
+  }
+  function byYear(a,b){ return a.y - b.y; }
+  var dx = S.filter(function(d){ return d.aim==='dx'; }).sort(byYear);
+  var px = S.filter(function(d){ return d.aim==='px'; }).sort(byYear);
+  var nd = place(dx), np = place(px);
+  var axisY = topM + nd*laneH + gapAxis;
+  var H = axisY + gapAxis + np*laneH + 46;
+  svg.setAttribute('viewBox', '0 0 '+W+' '+H);
+
+  var o='';
+  var bandX = X(2019.4);
+  o += '<rect x="'+bandX+'" y="22" width="'+(W-bandX-8)+'" height="'+(H-70)+'" fill="'+trace+'" opacity=".06" rx="4"/>';
+  o += '<line x1="'+bandX+'" y1="22" x2="'+bandX+'" y2="'+(H-48)+'" stroke="'+trace+'" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  o += '<text x="'+(bandX+8)+'" y="18" fill="'+trace+'" font-size="12">2020 年之後</text>';
+  o += '<line x1="'+(pad-16)+'" y1="'+axisY+'" x2="'+(W-8)+'" y2="'+axisY+'" stroke="'+rule+'"/>';
+  [2000,2005,2010,2015,2020,2022].forEach(function(y){
+    o += '<line x1="'+X(y)+'" y1="'+axisY+'" x2="'+X(y)+'" y2="'+(axisY+6)+'" stroke="'+rule+'"/>';
+    o += '<text x="'+X(y)+'" y="'+(axisY+21)+'" fill="'+muted+'" font-size="11" text-anchor="middle">'+y+'</text>';
+  });
+  o += '<text x="4" y="16" fill="'+trace+'" font-size="11">↑ 診斷型</text>';
+  o += '<text x="4" y="'+(H-10)+'" fill="'+blue+'" font-size="11">↓ 預後型</text>';
+
+  function dots(items, up){
+    items.forEach(function(d){
+      var y = up ? axisY - gapAxis - d._lane*laneH : axisY + gapAxis + d._lane*laneH;
+      var c = up ? trace : blue;
+      o += '<line x1="'+d._x+'" y1="'+y+'" x2="'+d._x+'" y2="'+axisY+'" stroke="'+rule+'" stroke-width="1"/>';
+      o += '<circle cx="'+d._x+'" cy="'+y+'" r="7.5" fill="'+c+'" fill-opacity=".9" stroke="'+card+'" stroke-width="1.5" style="cursor:pointer" data-n="'+esc(d.n)+'"><title>'+esc(d.n)+'</title></circle>';
+      o += '<text x="'+(d._left ? d._x-13 : d._x+13)+'" y="'+(y+4)+'" fill="'+muted+'" font-size="11" text-anchor="'+(d._left?'end':'start')+'" style="cursor:pointer" data-n="'+esc(d.n)+'">'+esc(d.n)+'</text>';
+    });
+  }
+  dots(dx, true);
+  dots(px, false);
+  svg.innerHTML = o;
+}
+var tl = document.getElementById('timeline');
+if(tl){
+  tl.addEventListener('click', function(ev){
+    var n = ev.target && ev.target.getAttribute && ev.target.getAttribute('data-n');
+    if(!n) return;
+    var all = document.querySelector('#filters .chip[data-f="all"]');
+    if(all && all.getAttribute('aria-pressed') !== 'true') all.click();
+    var rows = document.querySelectorAll('#rows .row .who');
+    for(var i=0;i<rows.length;i++){
+      if(rows[i].textContent === n){
+        var btn = rows[i].parentNode && rows[i].parentNode.parentNode;
+        if(btn && btn.click) btn.click();
+        break;
+      }
+    }
+  });
+}
+
+/* ---------- 2. socio-ecological pyramid ---------- */
+var LAYERS = [
+  {k:'society', name:'社會 Society', w:0.30,
+   what:'健康政策、給付制度、整體健康不平等。',
+   use:'本綜述中幾乎沒有模型使用這一層的因子。',
+   you:''},
+  {k:'community', name:'社區 Community', w:0.48,
+   what:'社區感染流行程度、地區醫療資源、鄰里剝奪程度。',
+   use:'原文指出，種族、社經地位、居住安排與鄰里剝奪等社會決定因素的報告率低於 30%。',
+   you:''},
+  {k:'institution', name:'機構 Institution', w:0.66,
+   what:'人力配置、床位與住房密度、共用設備、感控作業品質、群聚事件史。',
+   use:'極少被納入模型，是現有文獻最明顯的空白。',
+   you:'而這些資料，住宿機構每天都在產生。'},
+  {k:'interpersonal', name:'人際 Interpersonal', w:0.82,
+   what:'家屬探視、照顧者互動、社交活動參與。',
+   use:'只有少數研究碰到，例如 Baldominos 2020 納入了社交資料。',
+   you:''},
+  {k:'individual', name:'個人 Individual', w:1.0,
+   what:'認知功能障礙、功能與 ADL 下降、心搏過速、人口學特性、共病、生命徵象。',
+   use:'幾乎所有模型都集中在這一層。原文指出這會限制模型的公平性。',
+   you:''}
+];
+var activeLayer = 'individual';
+function drawPyramid(){
+  var svg = document.getElementById('pyramid');
+  if(!svg) return;
+  var W=420, cx=210, top=22, hh=52, gap=5;
+  var rule=tk('--rule'), muted=tk('--muted'), trace=tk('--trace'), ink=tk('--ink'), card=tk('--card');
+  var o='';
+  LAYERS.forEach(function(L,i){
+    var yTop = top + i*(hh+gap);
+    var wTop = (i===0 ? L.w*0.55 : LAYERS[i-1].w) * (W-60);
+    var wBot = L.w*(W-60);
+    var on = L.k === activeLayer;
+    var fill = on ? trace : card;
+    var op = on ? 0.22 : 1;
+    o += '<polygon points="'+(cx-wTop/2)+','+yTop+' '+(cx+wTop/2)+','+yTop+' '+(cx+wBot/2)+','+(yTop+hh)+' '+(cx-wBot/2)+','+(yTop+hh)+'" '
+       + 'fill="'+fill+'" fill-opacity="'+op+'" stroke="'+(on?trace:rule)+'" stroke-width="'+(on?2:1.2)+'" style="cursor:pointer" data-k="'+L.k+'"/>';
+    o += '<text x="'+cx+'" y="'+(yTop+hh/2+5)+'" fill="'+(on?trace:ink)+'" font-size="13" text-anchor="middle" style="cursor:pointer;pointer-events:none">'+esc(L.name)+'</text>';
+  });
+  o += '<text x="'+cx+'" y="'+(top+5*(hh+gap)+20)+'" fill="'+muted+'" font-size="11" text-anchor="middle">越往下越貼近住民個人</text>';
+  svg.innerHTML = o;
+  var L = LAYERS.filter(function(x){ return x.k===activeLayer; })[0];
+  var info = document.getElementById('pyrinfo');
+  info.innerHTML = '';
+  var h = document.createElement('h4'); h.textContent = L.name;
+  var p1 = document.createElement('p'); p1.textContent = '包含什麼：' + L.what;
+  var p2 = document.createElement('p'); p2.className = 'explain'; p2.textContent = L.use + (L.you ? ' ' + L.you : '');
+  info.appendChild(h); info.appendChild(p1); info.appendChild(p2);
+}
+var pyr = document.getElementById('pyramid');
+if(pyr){
+  pyr.addEventListener('click', function(ev){
+    var k = ev.target && ev.target.getAttribute && ev.target.getAttribute('data-k');
+    if(!k) return;
+    activeLayer = k; drawPyramid();
+  });
+}
+
+/* ---------- 3. AUC comparison chart ---------- */
+var aucSort = 'score';
+function drawAucChart(){
+  var svg = document.getElementById('aucchart');
+  if(!svg) return;
+  var data = S.filter(function(d){ return d.auc; }).slice();
+  if(aucSort === 'score') data.sort(function(a,b){ return b.auc - a.auc; });
+  else data.sort(function(a,b){ return b.y - a.y || b.auc - a.auc; });
+  var W=760, left=132, right=46, top=34, rowH=27;
+  var rule=tk('--rule'), muted=tk('--muted'), trace=tk('--trace'), blue=tk('--blue'), ink=tk('--ink');
+  function X(v){ return left + (v-0.5)/0.5*(W-left-right); }
+  var o='';
+  [0.5,0.6,0.7,0.8,0.9,1.0].forEach(function(v){
+    o += '<line x1="'+X(v)+'" y1="'+(top-10)+'" x2="'+X(v)+'" y2="'+(top+data.length*rowH)+'" stroke="'+rule+'" stroke-width="1"/>';
+    o += '<text x="'+X(v)+'" y="'+(top-16)+'" fill="'+muted+'" font-size="11" text-anchor="middle">'+v.toFixed(1)+'</text>';
+  });
+  data.forEach(function(d,i){
+    var y = top + i*rowH + 13;
+    var c = d.aim === 'dx' ? trace : blue;
+    o += '<text x="'+(left-12)+'" y="'+(y+4)+'" fill="'+ink+'" font-size="12" text-anchor="end">'+esc(d.n)+'</text>';
+    o += '<line x1="'+X(0.5)+'" y1="'+y+'" x2="'+X(d.auc)+'" y2="'+y+'" stroke="'+c+'" stroke-width="7" stroke-linecap="round" opacity=".32"/>';
+    o += '<circle cx="'+X(d.auc)+'" cy="'+y+'" r="6" fill="'+c+'"/>';
+    o += '<text x="'+(X(d.auc)+12)+'" y="'+(y+4)+'" fill="'+muted+'" font-size="11">'+String(d.auc).replace(/^0/,'.')+'</text>';
+  });
+  var hiY = top + data.map(function(d){return d.n;}).indexOf('Tan 2022')*rowH + 13;
+  var loY = top + data.map(function(d){return d.n;}).indexOf('Ramazi 2022')*rowH + 13;
+  o += '<text x="'+left+'" y="'+(top+data.length*rowH+26)+'" fill="'+muted+'" font-size="11">最高分的 Tan 2022 用傳統邏輯斯迴歸；最低分的 Ramazi 2022 用深度學習加多模態感測資料。</text>';
+  o += '<circle cx="'+(X(0.958))+'" cy="'+hiY+'" r="10" fill="none" stroke="'+trace+'" stroke-width="1.5"/>';
+  o += '<circle cx="'+(X(0.69))+'" cy="'+loY+'" r="10" fill="none" stroke="'+tk('--flag')+'" stroke-width="1.5"/>';
+  svg.setAttribute('viewBox', '0 0 760 ' + (top + data.length*rowH + 40));
+  svg.innerHTML = o;
+}
+Array.prototype.forEach.call(document.querySelectorAll('[data-sort]'), function(b){
+  b.addEventListener('click', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('[data-sort]'), function(o){ o.setAttribute('aria-pressed','false'); });
+    b.setAttribute('aria-pressed','true');
+    aucSort = b.getAttribute('data-sort');
+    drawAucChart();
+  });
+});
+
+/* ---------- 4. PROBAST fillable grid ---------- */
+var DOMAINS = ['Participants 參與者','Predictors 預測因子','Outcome 結果','Analysis 分析'];
+var CYCLE = ['', 'low', 'unclear', 'high'];
+var LABELS = {'':'', low:'低', unclear:'不明', high:'高'};
+var grid = {};
+try{
+  var raw = localStorage.getItem('probast-grid');
+  if(raw) grid = JSON.parse(raw) || {};
+}catch(e){ grid = {}; }
+function saveGrid(){ try{ localStorage.setItem('probast-grid', JSON.stringify(grid)); }catch(e){} }
+function gridStat(){
+  var el = document.getElementById('pgridstat');
+  if(!el) return;
+  var one=0, two=0, four=0, analysisHigh=0, filled=0;
+  S.forEach(function(d){
+    var hi=0, uh=0;
+    for(var j=0;j<4;j++){
+      var v = grid[d.n+'|'+j];
+      if(v) filled++;
+      if(v==='high') hi++;
+      if(v==='high'||v==='unclear') uh++;
+      if(j===3 && v==='high') analysisHigh++;
+    }
+    if(hi===4) four++;
+    else if(uh>=2) two++;
+    else if(uh===1) one++;
+  });
+  el.textContent = '已填 ' + filled + '/52 格　｜　1 個領域高或不明：' + one + ' 篇、2 個以上：' + two + ' 篇、四個全高：' + four + ' 篇　｜　Analysis 高風險：' + analysisHigh + ' 篇';
+}
+function buildGrid(){
+  var host = document.getElementById('pgrid');
+  if(!host) return;
+  host.innerHTML = '';
+  host.appendChild(document.createElement('span'));
+  DOMAINS.forEach(function(d){
+    var c = document.createElement('span'); c.className='colname'; c.textContent = d;
+    host.appendChild(c);
+  });
+  S.forEach(function(st){
+    var nm = document.createElement('span');
+    nm.className='rowname'; nm.textContent = st.n; nm.title = st.n;
+    host.appendChild(nm);
+    for(var j=0;j<4;j++){
+      (function(j){
+        var key = st.n+'|'+j;
+        var b = document.createElement('button');
+        b.className='pcell';
+        b.type='button';
+        var v = grid[key] || '';
+        b.setAttribute('data-v', v);
+        b.textContent = LABELS[v];
+        b.setAttribute('aria-label', st.n + ' ' + DOMAINS[j]);
+        b.addEventListener('click', function(){
+          var cur = grid[key] || '';
+          var nx = CYCLE[(CYCLE.indexOf(cur)+1) % CYCLE.length];
+          if(nx) grid[key] = nx; else delete grid[key];
+          b.setAttribute('data-v', nx);
+          b.textContent = LABELS[nx];
+          saveGrid(); gridStat();
+        });
+        host.appendChild(b);
+      })(j);
+    }
+  });
+  gridStat();
+}
+var rst = document.getElementById('pgridreset');
+if(rst) rst.addEventListener('click', function(){ grid = {}; saveGrid(); buildGrid(); });
+
+function drawAll(){ drawTimeline(); drawPyramid(); drawAucChart(); }
+drawAll();
+buildGrid();
+var tb = document.getElementById('themebtn');
+if(tb) tb.addEventListener('click', function(){ setTimeout(drawAll, 30); });
+
+/* keep the rail in sync with the new section */
+var railLi = document.querySelector('#rail li[data-t="predictors"]');
+var predSec = document.getElementById('predictors');
+if(railLi && predSec && 'IntersectionObserver' in window){
+  new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){
+        Array.prototype.forEach.call(document.querySelectorAll('#rail li'), function(li){ li.classList.remove('on'); });
+        railLi.classList.add('on');
+      }
+    });
+  }, {rootMargin:'-45% 0px -50% 0px'}).observe(predSec);
+}
+})();
+
+</script>
+</body>
+</html>
+
+</body></html>
