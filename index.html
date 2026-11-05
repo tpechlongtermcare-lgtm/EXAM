@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -110,6 +109,9 @@ a{color:var(--blue)}
 .lede{font-size:1.08rem; color:var(--ink-soft); max-width:60ch}
 .hero .t-en{font-size:.97rem; line-height:1.6; color:var(--ink-soft); margin:0 0 14px; max-width:62ch}
 .byline{font-size:1rem; color:var(--ink); margin:0; padding-top:16px; border-top:2px solid var(--trace); display:inline-block}
+.byline .sep{color:var(--rule); margin:0 12px}
+.byline .lb{color:var(--muted); font-size:.92rem; margin-right:6px}
+@media (max-width:520px){.byline .sep{display:block; height:0; margin:5px 0; overflow:hidden}}
 .cite{
   margin:26px 0 0; padding:14px 18px; background:var(--card);
   border-left:3px solid var(--blue); border-radius:0 6px 6px 0;
@@ -427,7 +429,7 @@ footer{padding:40px 0 70px; color:var(--muted); font-size:.85rem; border-top:1px
     <header class="hero">
       <p class="t-en">Machine learning-based infection diagnostic and prognostic models in post-acute care settings: a systematic review</p>
       <h1>急性後期照護場域中以機器學習建立<br>感染診斷與預後模型：系統性綜述</h1>
-      <p class="byline">報告者　鄭瑞賢</p>
+      <p class="byline"><span class="lb">指導教授</span>郭朝揚老師<span class="sep">│</span><span class="lb">報告者</span>鄭瑞賢</p>
       <p class="cite"><b>Xu, Z., Scharp, D., Hobensack, M., Ye, J., Zou, J., Ding, S., Shang, J., &amp; Topaz, M. (2025).</b> Machine learning-based infection diagnostic and prognostic models in post-acute care settings: A systematic review. <i>Journal of the American Medical Informatics Association, 32</i>(1), 241&ndash;252. https://doi.org/10.1093/jamia/ocae278</p>
       <div class="qrrow">
         <div class="qrcard">
@@ -2192,5 +2194,3 @@ if(railLi && predSec && 'IntersectionObserver' in window){
 </script>
 </body>
 </html>
-
-</body></html>
