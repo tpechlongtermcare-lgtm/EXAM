@@ -184,6 +184,7 @@ section:first-of-type{border-top:none}
 .row[aria-pressed="true"]{border-color:var(--trace); background:var(--trace-soft)}
 .row .who{font-weight:700}
 .row .where{color:var(--muted); font-size:.83rem; display:block; font-weight:400}
+.row .where .inf{color:var(--blue); font-weight:700; letter-spacing:.02em}
 .bar{width:104px}
 .bar .track{height:7px; background:var(--rule); border-radius:4px; overflow:hidden}
 .bar .fill{height:100%; background:var(--trace); border-radius:4px}
@@ -993,55 +994,55 @@ footer{padding:40px 0 70px; color:var(--muted); font-size:.85rem; border-top:1px
 
   /* ---------- studies ---------- */
   var studies = [
-    {id:'lee22', ref:34, title:'Factors associated with SARS-CoV-2 test positivity in long-term care homes: a population-based cohort analysis using machine learning', who:'Lee 2022', set:'LTC', setName:'長期照護', aim:'dx', target:'呼吸道感染（SARS-CoV-2 確診）',
+    {id:'lee22', inf:'RTI', ref:34, title:'Factors associated with SARS-CoV-2 test positivity in long-term care homes: a population-based cohort analysis using machine learning', who:'Lee 2022', set:'LTC', setName:'長期照護', aim:'dx', target:'呼吸道感染（SARS-CoV-2 確診）',
      algo:'XGBoost', algoWhy:'一輪一輪修正前一輪猜錯的案例，表格型資料上通常表現最好，但層層疊加後不易解釋。',
      modal:'單模態', data:'結構化電子病歷（個人與社區特徵）', auc:0.934, metric:'AUC 0.934（敏感度 0.887、特異度 0.869）', ml:true,
      note:'本綜述中診斷型的高分組之一。敏感度與特異度都接近 0.87，代表分界點設在兩群中間，兩邊兼顧。'},
-    {id:'ramazi22', ref:55, title:'Developing acute event risk profiles for older adults with dementia in long-term care using motor behavior clusters derived from deep learning', who:'Ramazi 2022', set:'LTC', setName:'長期照護（失智症）', aim:'dx', target:'尿路感染與急性事件',
+    {id:'ramazi22', inf:'UTI', ref:55, title:'Developing acute event risk profiles for older adults with dementia in long-term care using motor behavior clusters derived from deep learning', who:'Ramazi 2022', set:'LTC', setName:'長期照護（失智症）', aim:'dx', target:'尿路感染與急性事件',
      algo:'深度時間聚類 ＋ CART 決策樹', algoWhy:'先從連續訊號中找出反覆出現的行為型態，再用決策樹分流。',
      modal:'多模態', data:'穿戴式與室內定位訊號 ＋ 電子病歷', auc:0.69, metric:'AUC 0.69（AUPRC 0.70）', ml:true,
      note:'全篇唯一報告 AUPRC 的研究，這在感染這類不平衡資料上更誠實。也是「最進階的方法拿到最低 AUC」的那一篇。'},
-    {id:'tan22', ref:47, title:'Development and validation of a nomogram for predicting the risk of nursing home-acquired pneumonia', who:'Tan 2022', set:'NH', setName:'護理之家', aim:'dx', target:'護理之家肺炎（NHAP）',
+    {id:'tan22', inf:'RTI', ref:47, title:'Development and validation of a nomogram for predicting the risk of nursing home-acquired pneumonia', who:'Tan 2022', set:'NH', setName:'護理之家', aim:'dx', target:'護理之家肺炎（NHAP）',
      algo:'邏輯斯迴歸（諾莫圖）', algoWhy:'把迴歸係數畫成一張可以手動對照的計分圖，臨床可直接使用。',
      modal:'單模態', data:'結構化電子病歷', auc:0.958, metric:'AUC 0.958', ml:false,
      note:'全篇最高分，用的卻是最傳統的方法。與 Ramazi 2022 並列，正好支持「複雜不等於更好」的論點。'},
-    {id:'garces21', ref:49, title:'Medical prognosis of infectious diseases in nursing homes by applying machine learning on clinical data collected in cloud microservices', who:'Garcés 2021', set:'NH', setName:'護理之家', aim:'dx', target:'呼吸道、泌尿道與傷口感染',
+    {id:'garces21', inf:'RTI·UTI·SSTI', ref:49, title:'Medical prognosis of infectious diseases in nursing homes by applying machine learning on clinical data collected in cloud microservices', who:'Garcés 2021', set:'NH', setName:'護理之家', aim:'dx', target:'呼吸道、泌尿道與傷口感染',
      algo:'k-最近鄰 ＋ 隨機森林', algoWhy:'先找狀況最相似的個案，再用多棵樹投票表決。',
      modal:'多模態', data:'雲端微服務彙整的臨床數據', auc:null, metric:'Accuracy 1.00', ml:true,
      note:'報告的是準確率而非 AUC，指標不同不可與其他研究並列比較。準確率 1.00 在臨床資料上極為罕見，要特別留意樣本與驗證方式。'},
-    {id:'lee21', ref:35, title:'Predictors of mortality among long-term care residents with SARS-CoV-2 infection', who:'Lee 2021', set:'LTC', setName:'長期照護', aim:'px', target:'COVID-19 感染後 30 天死亡率',
+    {id:'lee21', inf:'RTI', ref:35, title:'Predictors of mortality among long-term care residents with SARS-CoV-2 infection', who:'Lee 2021', set:'LTC', setName:'長期照護', aim:'px', target:'COVID-19 感染後 30 天死亡率',
      algo:'隨機存活森林', algoWhy:'存活分析版的隨機森林，能同時處理「會不會發生」與「多久之後發生」。',
      modal:'單模態', data:'結構化電子病歷（interRAI 評估）', auc:0.701, metric:'AUC 0.701', ml:true,
      note:'預後型模型的下限。預測死亡本來就受太多模型看不到的因素影響，分數偏低是常態。'},
-    {id:'song21', ref:57, title:'Predictive risk models for wound infection-related hospitalization or ED visits in home health care using machine-learning algorithms', who:'Song 2021', set:'HHC', setName:'居家照護', aim:'dx', target:'傷口感染與相關住院／急診',
+    {id:'song21', inf:'SSTI', ref:57, title:'Predictive risk models for wound infection-related hospitalization or ED visits in home health care using machine-learning algorithms', who:'Song 2021', set:'HHC', setName:'居家照護', aim:'dx', target:'傷口感染與相關住院／急診',
      algo:'邏輯斯迴歸、隨機森林、神經網路', algoWhy:'同時比較傳統與進階方法，是本綜述中少數做橫向比較的研究。',
      modal:'多模態', data:'結構化電子病歷 ＋ 臨床文字紀錄', auc:0.818, metric:'AUC 0.818（F1 0.88）', ml:true,
      note:'唯一的傷口感染模型。把護理紀錄的自由文字納入，對長照場域特別有參考價值。'},
-    {id:'pana21', ref:52, title:'Risk factors associated with all-cause 30-day mortality in nursing home residents with COVID-19', who:'Panagiotou 2021', set:'NH', setName:'護理之家', aim:'px', target:'COVID-19 感染後 30 天死亡率',
+    {id:'pana21', inf:'RTI', ref:52, title:'Risk factors associated with all-cause 30-day mortality in nursing home residents with COVID-19', who:'Panagiotou 2021', set:'NH', setName:'護理之家', aim:'px', target:'COVID-19 感染後 30 天死亡率',
      algo:'邏輯斯迴歸、線性混合效應模型', algoWhy:'混合效應模型用來吸收不同機構之間的差異。',
      modal:'單模態', data:'結構化電子病歷（MDS 評估）', auc:0.74, metric:'AUC 0.74', ml:false,
      note:'中等程度的死亡風險區分能力，屬於預後型模型的典型水準。'},
-    {id:'shang20', ref:56, title:'A predictive risk model for infection-related hospitalization among home healthcare patients', who:'Shang 2020', set:'HHC', setName:'居家照護', aim:'px', target:'不限類型感染的住院／急診',
+    {id:'shang20', inf:'RTI·UTI·SSTI·IV', ref:56, title:'A predictive risk model for infection-related hospitalization among home healthcare patients', who:'Shang 2020', set:'HHC', setName:'居家照護', aim:'px', target:'不限類型感染的住院／急診',
      algo:'邏輯斯迴歸', algoWhy:'固定權重的計分模型，最容易轉成臨床可用的風險評估表。',
      modal:'單模態', data:'結構化電子病歷（OASIS 評估）', auc:0.7162, metric:'C-statistic 0.7162', ml:false,
      note:'證明只用既有的例行評估資料就能建出可用模型——這對人力有限的機構是務實的訊息。'},
-    {id:'bald20', ref:48, title:'Infection prediction using physiological and social data in social environments', who:'Baldominos 2020', set:'NH', setName:'護理之家', aim:'dx', target:'不限類型之綜合感染偵測',
+    {id:'bald20', inf:'RTI·UTI·SSTI', ref:48, title:'Infection prediction using physiological and social data in social environments', who:'Baldominos 2020', set:'NH', setName:'護理之家', aim:'dx', target:'不限類型之綜合感染偵測',
      algo:'k-最近鄰 ＋ 主成分分析', algoWhy:'先用 PCA 把大量變項壓縮成少數綜合指標，再找相似個案。',
      modal:'多模態', data:'生理訊號 ＋ 社交與病歷資料', auc:0.798, metric:'AUC 0.798（敏感度 0.723）', ml:true,
      note:'少數納入社交互動資料的研究，稍微碰到了個人層次以外的因子。'},
-    {id:'rauh19', ref:53, title:'Predicting mortality in nursing home residents with dementia and pneumonia treated with antibiotics: validation of a prediction model in a more recent population', who:'Rauh 2019', set:'NH', setName:'護理之家（失智症）', aim:'px', target:'肺炎治療後 14 天死亡率',
+    {id:'rauh19', inf:'RTI', ref:53, title:'Predicting mortality in nursing home residents with dementia and pneumonia treated with antibiotics: validation of a prediction model in a more recent population', who:'Rauh 2019', set:'NH', setName:'護理之家（失智症）', aim:'px', target:'肺炎治療後 14 天死亡率',
      algo:'邏輯斯迴歸', algoWhy:'固定權重的機率模型。',
      modal:'單模態', data:'結構化電子病歷', auc:0.80, metric:'AUC 0.80', ml:false,
      note:'預後型的上限。傳統模型在死亡預測上仍有不錯的區分能力。'},
-    {id:'steen06', ref:54, title:'Predictors of mortality for lower respiratory infections in nursing home residents with dementia were validated transnationally', who:'Steen 2006', set:'NH', setName:'護理之家（失智症）', aim:'px', target:'下呼吸道感染死亡率',
+    {id:'steen06', inf:'RTI', ref:54, title:'Predictors of mortality for lower respiratory infections in nursing home residents with dementia were validated transnationally', who:'Steen 2006', set:'NH', setName:'護理之家（失智症）', aim:'px', target:'下呼吸道感染死亡率',
      algo:'邏輯斯迴歸', algoWhy:'固定權重的機率模型。',
      modal:'單模態', data:'結構化電子病歷（MDS 評估）', auc:0.74, metric:'C-statistic 0.74', ml:false,
      note:'早期研究。能被納入是因為本綜述不限出版年，也因此看得出領域的演變。'},
-    {id:'mehr01', ref:50, title:'Predicting mortality in nursing home residents with lower respiratory tract infection: the Missouri LRI study', who:'Mehr 2001', set:'NH', setName:'護理之家', aim:'px', target:'下呼吸道感染 30 天死亡率',
+    {id:'mehr01', inf:'RTI', ref:50, title:'Predicting mortality in nursing home residents with lower respiratory tract infection: the Missouri LRI study', who:'Mehr 2001', set:'NH', setName:'護理之家', aim:'px', target:'下呼吸道感染 30 天死亡率',
      algo:'邏輯斯迴歸、GEE', algoWhy:'GEE 用來校正同一住民重複發生事件造成的偏差。',
      modal:'單模態', data:'結構化電子病歷（MDS 評估）', auc:0.76, metric:'C-statistic 0.76', ml:false,
      note:'少數處理了重複測量問題的研究之一，這正是多數研究被判高偏差風險的地方。'},
-    {id:'naug00', ref:51, title:'Outcome of nursing home-acquired pneumonia: derivation and application of a practical model to predict 30 day mortality', who:'Naughton 2000', set:'NH', setName:'護理之家', aim:'px', target:'NHAP 30 天死亡率',
+    {id:'naug00', inf:'RTI', ref:51, title:'Outcome of nursing home-acquired pneumonia: derivation and application of a practical model to predict 30 day mortality', who:'Naughton 2000', set:'NH', setName:'護理之家', aim:'px', target:'NHAP 30 天死亡率',
      algo:'邏輯斯迴歸', algoWhy:'固定權重的機率模型。',
      modal:'單模態', data:'結構化電子病歷', auc:0.74, metric:'AUC 0.74', ml:false,
      note:'本綜述中最早的一篇，二十多年前的模型與 2021 年的模型分數相近，本身就很說明問題。'}
@@ -1073,7 +1074,10 @@ footer{padding:40px 0 70px; color:var(--muted); font-size:.85rem; border-top:1px
       who.className = 'who'; who.textContent = s.who;
       var where = document.createElement('span');
       where.className = 'where';
-      where.textContent = s.setName + '｜' + (s.aim === 'dx' ? '診斷型' : '預後型') + '｜' + s.modal;
+      var infEl = document.createElement('b'); infEl.className = 'inf'; infEl.textContent = s.inf;
+      where.appendChild(document.createTextNode(s.setName + '｜'));
+      where.appendChild(infEl);
+      where.appendChild(document.createTextNode('｜' + (s.aim === 'dx' ? '診斷型' : '預後型') + '｜' + s.modal));
       left.appendChild(who); left.appendChild(where);
       var bar = document.createElement('span');
       bar.className = 'bar';
@@ -1118,7 +1122,7 @@ footer{padding:40px 0 70px; color:var(--muted); font-size:.85rem; border-top:1px
       e.textContent = t; tags.appendChild(e);
     });
     var dl = document.createElement('dl'); dl.className = 'kv';
-    [['預測目標', s.target], ['演算法', s.algo], ['資料模態', s.data], ['最佳表現', s.metric]].forEach(function(pair){
+    [['感染類型', s.inf], ['預測目標', s.target], ['演算法', s.algo], ['資料模態', s.data], ['最佳表現', s.metric]].forEach(function(pair){
       var dt = document.createElement('dt'); dt.textContent = pair[0];
       var dd = document.createElement('dd'); dd.textContent = pair[1];
       dl.appendChild(dt); dl.appendChild(dd);
