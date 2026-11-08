@@ -348,6 +348,10 @@ footer{padding:40px 0 70px; color:var(--muted); font-size:.85rem; border-top:1px
 .qbox li:last-child{margin-bottom:0}
 .qbox li::before{content:""; position:absolute; left:0; top:9px; width:6px; height:6px; border-radius:50%; background:var(--trace)}
 .qbox li b{color:var(--ink)}
+.srcq{border-left:3px solid var(--trace); padding:3px 0 3px 15px; margin:0 0 16px}
+.srcq .en2{font-size:.88rem; line-height:1.65; color:var(--ink); margin:0 0 6px; font-style:italic}
+.srcq .zh2{font-size:.86rem; line-height:1.6; color:var(--ink-soft); margin:0 0 5px}
+.srcq .wh2{font-size:.78rem; color:var(--muted); margin:0}
 .rqtag{font-size:.82rem; color:var(--muted); margin:0 0 6px; display:flex; align-items:center; gap:8px}
 .rqtag span{background:var(--blue-soft); color:var(--blue); border-radius:3px; padding:2px 7px; font-weight:700; font-size:.76rem}
 
@@ -732,6 +736,42 @@ footer{padding:40px 0 70px; color:var(--muted); font-size:.85rem; border-top:1px
         <svg id="aucchart" viewBox="0 0 760 400" role="img" aria-label="各研究最佳 AUC 比較"></svg>
         <p class="note-inline">橫軸從 0.5（等於丟銅板）起算。Garcés 2021 報的是 Accuracy 1.00，指標不同，沒有放進這張圖。切成年代排序可以看出：分數並沒有隨著年份往上走。</p>
       </div>
+
+      <div class="vizwrap">
+        <div class="vizhead"><h3>這些模型預測的不是同一種感染，為什麼可以放在一起看</h3><span class="hint">各點均附原文出處</span></div>
+        <p style="margin:0 0 14px">上面這張圖把肺炎、泌尿道感染、傷口感染的模型並列，很容易讓人以為作者在比高低。其實不是。</p>
+        <ul class="maplist" style="margin-bottom:14px">
+          <li><span class="sec">① 作者沒有比較</span><span class="say">原文明確說明，因研究間異質性顯著，只「報告個別研究的效能並採描述性分析」，沒有合併計算、沒有排名。Table 2 之後也補充：這些指標可能來自各篇內部的不同模型，最佳演算法隨研究與評估指標而異。<br><span style="color:var(--muted)">出處：Methods「Data synthesis」；Results「Model performances」段末</span></span></li>
+          <li><span class="sec">② 評的是方法，不是疾病</span><span class="say">這篇要回答的不是「哪個模型預測肺炎最準」，而是「這個場域的模型整體品質如何」。而 PROBAST 問的那些問題——有沒有外部驗證、有沒有校準、有沒有處理同一住民重複感染——和預測的是肺炎還是泌尿道感染無關。方法學缺陷不會因為換個疾病就消失。</span></li>
+          <li><span class="sec">③ 臨床上本來就重疊</span><span class="say">原文指出，長照住民的感染<b>症狀不典型，且不同感染之間的共病與表現高度重疊</b>。發燒、食慾差、活動力下降，在肺炎、泌尿道感染、傷口感染都會出現。作者因此建議未來發展<b>不分類型的通用感染模型</b>，再與類型特定模型比較。<br><span style="color:var(--muted)">出處：Discussion 第二段</span></span></li>
+          <li><span class="sec">④ 「不能比」本身就是發現</span><span class="say">正因為每篇的族群、感染定義與結果指標都不同，整個領域才無法累積可互相印證的證據。這正是結論寫「證據仍然有限」而不是「某類模型較優」的原因。</span></li>
+        </ul>
+        <div class="warn" style="margin-top:0"><b>但這確實也是限制。</b>泌尿道感染與傷口感染各只有 1 篇，就算想分開談也談不了——這是雞生蛋的問題。原文並點出一個更明顯的缺口：<b>完全沒有敗血症的預測模型</b>，而敗血症正是長照住民轉送醫院最主要的原因之一。<span style="color:var(--muted)">（出處：Discussion 第二段）</span></div>
+
+        <h3>原文可以直接指的三句話</h3>
+        <p style="margin:0 0 14px; font-size:.92rem; color:var(--ink-soft)">原文並未出現「這些研究不能互相比較」這樣的句子。它的實際陳述是下面三句，「AUC 不宜跨研究比較」是由此推得的判讀。</p>
+
+        <div class="srcq">
+          <p class="en2">&ldquo;Due to significant inter-study heterogeneity, we reported the performance metrics of individual studies and provided a descriptive analysis to accommodate the diverse methodologies and outcomes.&rdquo;</p>
+          <p class="zh2">由於研究間異質性顯著，我們報告個別研究的效能指標，並提供描述性分析，以容納多樣的方法學與結果。</p>
+          <p class="wh2">Methods — Data synthesis and conceptual framework</p>
+        </div>
+
+        <div class="srcq">
+          <p class="en2">&ldquo;These metrics may come from different models within each study. The best-performing ML algorithm varied across studies and depended on the evaluation metrics used. No significant differences in discrimination were observed based on the modeling approach, whether in terms of algorithms (regression vs non-regression) or data modality (multimodal vs unimodal).&rdquo;</p>
+          <p class="zh2">這些指標可能來自各篇研究內部的不同模型。最佳表現的 ML 演算法因研究而異，並取決於所採用的評估指標。不論以演算法（迴歸 vs 非迴歸）或資料模態（多模態 vs 單模態）區分，都未觀察到區分度上的顯著差異。</p>
+          <p class="wh2">Results — Model performances（Table 2 之後）</p>
+        </div>
+
+        <div class="srcq">
+          <p class="en2">&ldquo;However, further demonstrating the superiority of multimodal model performance in this review is challenging. This may be due to the limited number of multimodal models available for pooled performance analysis and the high variability in study designs affecting outcomes such as sample size, predictor combinations, and events per variable. Most studies lacked direct model comparisons.&rdquo;</p>
+          <p class="zh2">然而，要在本回顧中進一步證明多模態模型效能的優越性是困難的。這可能肇因於可供合併效能分析的多模態模型數量有限，以及研究設計高度變異所影響的樣本數、預測因子組合與每變項事件數。<b>多數研究缺乏直接的模型比較。</b></p>
+          <p class="wh2">Discussion — 第二段</p>
+        </div>
+
+        <div class="warn" style="margin-top:0"><b>建議的講法。</b>把原文說的和自己的判讀分開：「作者因研究間異質性顯著而未進行統合分析，改採描述性分析，並指出多數研究缺乏直接的模型比較。基於這些陳述，我認為這些 AUC 不宜跨研究直接比較。」</div>
+      </div>
+
       <div class="concept">
         <h3 style="margin-top:0">一句話定義</h3>
         <p style="margin:0">隨機抽一位後來感染的住民、和一位沒感染的住民，模型給感染那位比較高的風險分數的機率，就是 AUC。0.5 等於丟銅板，1.0 等於完全分得開。</p>
